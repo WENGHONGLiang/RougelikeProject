@@ -33,6 +33,13 @@ void APropertyActor::BeginPlay()
 	SphereComp->OnComponentEndOverlap.AddDynamic(this, &APropertyActor::EndOverlap);
 }
 
+void APropertyActor::EndPlay(const EEndPlayReason::Type EndPlayReason)
+{
+	Super::EndPlay(EndPlayReason);
+	SphereComp->OnComponentBeginOverlap.RemoveDynamic(this, &APropertyActor::BeginOverlap);
+	SphereComp->OnComponentEndOverlap.RemoveDynamic(this, &APropertyActor::EndOverlap);
+}
+
 // Called every frame
 void APropertyActor::Tick(float DeltaTime)
 {
@@ -47,7 +54,6 @@ void APropertyActor::BeginOverlap(UPrimitiveComponent* OverlappedComponent, AAct
 		return;
 	
 	URLAbilitySystemLibrary::GetOverlayWidgetController(this)->SetMessage(MessageTag); // 具体装备
-	
 	URLAbilitySystemLibrary::GetOverlayWidgetController(this)->SetMessage(TipTag); // 拾取提示
 }
 

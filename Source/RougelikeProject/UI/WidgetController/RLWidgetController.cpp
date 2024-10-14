@@ -8,6 +8,7 @@ void URLWidgetController::SetWidgetControllerParams(const FWidgetControllerParam
 	PlayerController = WCParams.PlayerController;
 	AbilitySystemComponent = WCParams.AbilitySystemComponent;
 	AttributeSet = WCParams.AttributeSet;
+	PlayerState = WCParams.PlayerState;
 }
 
 void URLWidgetController::BroadcastInitialValues()
@@ -18,4 +19,9 @@ void URLWidgetController::BroadcastInitialValues()
 void URLWidgetController::BindCallbacksToDependencies()
 {
 	
+}
+
+void URLWidgetController::ShowWidget(bool bShow)
+{
+	OnShow.Broadcast(bShow);
 }

@@ -10,6 +10,9 @@
 
 ARLEnemy::ARLEnemy()
 {
+	AbilitySystemComponent = CreateDefaultSubobject<URLAbilitySystemComponent>(TEXT("AbilitySystemComponent"));
+	AttributeSet = CreateDefaultSubobject<UAttributeSetBase>("AttributeSet");
+	
 	HealthBar = CreateDefaultSubobject<UWidgetComponent>("HealthBar");
 	HealthBar->SetupAttachment(GetRootComponent());
 }
@@ -51,6 +54,23 @@ void ARLEnemy::BeginPlay()
 void ARLEnemy::InitAbilityActorInfo()
 {
 	Super::InitAbilityActorInfo();
+
+	AbilitySystemComponent->InitAbilityActorInfo(this, this);
+
+	URLAbilitySystemComponent* RLASC = Cast<URLAbilitySystemComponent>(AbilitySystemComponent);
+	
+	// ASC绑定GE被应用的回调函数
+	RLASC->BindGameplayEffectAppliedDelegate();
+	RLASC->OnGameplayEffectApplied.AddUObject(this, &ARLEnemy::GameplayEffectApplied);
+
+	// 初始属性
+	FCharacterClassDefaultInfo info = CharacterInfo->GetClassDefaultInfo(CharacterType);
+	ApplyEffectToSelf(info.Attributes, GetCharacterLevel());
+
+	// 添加初始技能
+	AddCharacterAbilities();
+
+	Cast<UAttributeSetBase>(AttributeSet)->OnCharacterDie.AddDynamic(this, &ARLEnemy::CharacterDie);
 }
 
 void ARLEnemy::GameplayEffectApplied(const FGameplayTagContainer& TagContainer)

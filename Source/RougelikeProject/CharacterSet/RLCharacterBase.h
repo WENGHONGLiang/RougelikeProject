@@ -24,20 +24,21 @@ public:
 	// Implement IAbilitySystemInterface
 	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
 	UAttributeSet* GetAttributeSet() const { return AttributeSet; }	
-	float GetCharacterLevel() const { return Level; }
+	int32 GetCharacterLevel() const { return CharacterLevel; }
 
 protected:
 	UPROPERTY()
 	UAbilitySystemComponent* AbilitySystemComponent;
 	
 	UPROPERTY(VisibleAnywhere, Category="Character Attributes")
-	float Level = 1;
+	int32 CharacterLevel = 1;
 	
 	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category="Base Attributes")
 	TSubclassOf<UGameplayEffect> DefaultAttributes;
 
 	// 对自身使用 GE，暂时用于初始化属性
-	void ApplyEffectToSelf(TSubclassOf<UGameplayEffect> IniGameplayEffectClass, float Level);
+	UFUNCTION(BlueprintCallable)
+	void ApplyEffectToSelf(TSubclassOf<UGameplayEffect> GameplayEffectClass, int32 Level);
 
 	virtual void InitAbilityActorInfo();
 

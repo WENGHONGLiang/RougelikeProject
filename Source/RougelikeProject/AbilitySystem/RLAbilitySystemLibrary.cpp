@@ -5,6 +5,7 @@
 
 #include "Kismet/GameplayStatics.h"
 #include "RougelikeProject/CharacterSet/RLCharacter.h"
+#include "RougelikeProject/Player/RLPlayerState.h"
 #include "RougelikeProject/UI/HUD/RLHUD.h"
 
 UOverlayWidgetController* URLAbilitySystemLibrary::GetOverlayWidgetController(const UObject* WorldContextObject)
@@ -16,11 +17,11 @@ UOverlayWidgetController* URLAbilitySystemLibrary::GetOverlayWidgetController(co
 	{
 		if(ARLHUD* HUD = Cast<ARLHUD>(PC->GetHUD()))
 		{
-			ARLCharacter* Character = Cast<ARLCharacter>(PC->GetCharacter());
-			UAbilitySystemComponent* ASC = Character->GetAbilitySystemComponent();
-			UAttributeSet* AS = Character->GetAttributeSet();
+			ARLPlayerState* PS = PC->GetPlayerState<ARLPlayerState>();
+			UAbilitySystemComponent* ASC = PS->GetAbilitySystemComponent();
+			UAttributeSet* AS = PS->GetAttributeSet();
 
-			const FWidgetControllerParams WidgetControllerParams(PC, ASC, AS);
+			const FWidgetControllerParams WidgetControllerParams(PC, ASC, AS, PS);
 
 			UOverlayWidgetController* WidgetController = HUD->GetOverlayWidgetController(WidgetControllerParams);
 			
@@ -40,11 +41,11 @@ UAttributeMenuWidgetController* URLAbilitySystemLibrary::GetAttributeMenuWidgetC
 	{
 		if(ARLHUD* HUD = Cast<ARLHUD>(PC->GetHUD()))
 		{
-			ARLCharacter* Character = Cast<ARLCharacter>(PC->GetCharacter());
-			UAbilitySystemComponent* ASC = Character->GetAbilitySystemComponent();
-			UAttributeSet* AS = Character->GetAttributeSet();
+			ARLPlayerState* PS = PC->GetPlayerState<ARLPlayerState>();
+			UAbilitySystemComponent* ASC = PS->GetAbilitySystemComponent();
+			UAttributeSet* AS = PS->GetAttributeSet();
 
-			const FWidgetControllerParams WidgetControllerParams(PC, ASC, AS);
+			const FWidgetControllerParams WidgetControllerParams(PC, ASC, AS, PS);
 
 			UAttributeMenuWidgetController* WidgetController = HUD->GetAttributeMenuWidgetController(WidgetControllerParams);
 			

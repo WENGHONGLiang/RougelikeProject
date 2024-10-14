@@ -8,7 +8,9 @@
 #include "AbilitySystemBlueprintLibrary.h"
 #include "NavigationPath.h"
 #include "NavigationSystem.h"
+#include "RLPlayerState.h"
 #include "RougelikeProject/AbilitySystem/RLGameplayTags.h"
+#include "RougelikeProject/UI/HUD/RLHUD.h"
 
 ARLPlayerController::ARLPlayerController()
 {
@@ -33,6 +35,12 @@ void ARLPlayerController::BeginPlay()
 	InputModeData.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
 	InputModeData.SetHideCursorDuringCapture(false);
 	SetInputMode(InputModeData);
+
+	if(ARLHUD* HUD = Cast<ARLHUD>(GetHUD()))
+	{
+		ARLPlayerState* RLPlayerState = GetPlayerState<ARLPlayerState>();
+		HUD->InitLevelMap(this, RLPlayerState->GetAbilitySystemComponent(), RLPlayerState->GetAttributeSet(), RLPlayerState);
+	}
 }
 
 void ARLPlayerController::SetupInputComponent()
@@ -60,8 +68,6 @@ void ARLPlayerController::Tick(float DeltaSeconds)
 	}
 }
 
-
-
 void ARLPlayerController::AutoRun()
 {
 	if(!bAutoRunning) return;
@@ -81,18 +87,21 @@ void ARLPlayerController::AutoRun()
 
 void ARLPlayerController::RotateWithCursor()
 {
-	APawn* ControllerPawn = GetPawn<APawn>();
-	FVector Dir = CursorHit.ImpactPoint - ControllerPawn->GetActorLocation();
-	FRotator Rotation = Dir.Rotation();
-	Rotation.Pitch = ControllerPawn->GetActorRotation().Pitch;
-	ControllerPawn->SetActorRotation(Rotation);
+	if(APawn* ControllerPawn = GetPawn<APawn>())
+	{
+		FVector Dir = CursorHit.ImpactPoint - ControllerPawn->GetActorLocation();
+		FRotator Rotation = Dir.Rotation();
+		Rotation.Pitch = ControllerPawn->GetActorRotation().Pitch;
+		ControllerPawn->SetActorRotation(Rotation);
+	}
 }
 
 URLAbilitySystemComponent* ARLPlayerController::GetASC()
 {
 	if(RLAbilitySystemComponent == nullptr)
 	{
-		RLAbilitySystemComponent = Cast<URLAbilitySystemComponent>(UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(GetPawn<APawn>()));
+		//RLAbilitySystemComponent = Cast<URLAbilitySystemComponent>(UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(GetPawn<APawn>()));
+		RLAbilitySystemComponent = Cast<URLAbilitySystemComponent>(GetPlayerState<ARLPlayerState>()->GetAbilitySystemComponent());
 	}
 	return RLAbilitySystemComponent;
 }
@@ -119,7 +128,6 @@ void ARLPlayerController::Move(const FInputActionValue& InputActionValue)
 void ARLPlayerController::CursorTrace()
 {
 	GetHitResultUnderCursor(ECC_Visibility, false, CursorHit);
-
 	if(!CursorHit.bBlockingHit) return;
 }
 
@@ -131,7 +139,6 @@ void ARLPlayerController::AbilityInputTagPressed(FGameplayTag InputTag)
 		bAutoRunning = false;
 	}
 }
-
 
 void ARLPlayerController::AbilityInputTagHeld(FGameplayTag InputTag)
 {
@@ -164,13 +171,14 @@ void ARLPlayerController::AbilityInputTagReleased(FGameplayTag InputTag)
 		if(FollowTime <= ShortPressThreshold && ControllerPawn && MovePressTime >= MovePressInterval)
 		{
 			UNavigationPath* NavPath = UNavigationSystemV1::FindPathToLocationSynchronously(this, ControllerPawn->GetActorLocation(), CachedDestination);
+			
 			if(NavPath && NavPath->PathPoints.Num() >= 1)
 			{
 				Spline->ClearSplinePoints();
 				for(const FVector& PointLoc : NavPath->PathPoints)
 				{
 					Spline->AddSplinePoint(PointLoc, ESplineCoordinateSpace::World);
-					//DrawDebugSphere(GetWorld(), PointLoc, 8.f, 8, FColor::Green, false, 5.f);
+					DrawDebugSphere(GetWorld(), PointLoc, 8.f, 8, FColor::Green, false, 5.f);
 				}
 				CachedDestination = NavPath->PathPoints[NavPath->PathPoints.Num() - 1];
 				bAutoRunning = true;

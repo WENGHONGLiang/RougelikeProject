@@ -17,8 +17,8 @@ struct FWidgetControllerParams
 
 	FWidgetControllerParams(){}
 
-	FWidgetControllerParams(APlayerController* PC, UAbilitySystemComponent* ASC, UAttributeSet* AS) :
-	PlayerController(PC), AbilitySystemComponent(ASC), AttributeSet(AS) {}
+	FWidgetControllerParams(APlayerController* PC, UAbilitySystemComponent* ASC, UAttributeSet* AS, APlayerState* PS) :
+	PlayerController(PC), AbilitySystemComponent(ASC), AttributeSet(AS), PlayerState(PS) {}
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TObjectPtr<APlayerController> PlayerController = nullptr;
@@ -28,7 +28,12 @@ struct FWidgetControllerParams
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TObjectPtr<UAttributeSet> AttributeSet = nullptr;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TObjectPtr<APlayerState> PlayerState = nullptr;
 };
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnShowSignature, bool, bShow);
 
 UCLASS()
 class ROUGELIKEPROJECT_API URLWidgetController : public UObject
@@ -45,7 +50,14 @@ public:
 	// 绑定ASC数值变化事件
 	virtual void BindCallbacksToDependencies();
 	
+	UFUNCTION(BlueprintCallable)
+	void ShowWidget(bool bShow);
+	
 protected:
+	
+	UPROPERTY(BlueprintAssignable)
+	FOnShowSignature OnShow;
+	
 	// Controller -> Model
 	UPROPERTY(BlueprintReadOnly, Category="Widget Controller")
 	TObjectPtr<APlayerController> PlayerController;
@@ -55,4 +67,7 @@ protected:
 
 	UPROPERTY(BlueprintReadOnly, Category="Widget Controller")
 	TObjectPtr<UAttributeSet> AttributeSet;
+	
+	UPROPERTY(BlueprintReadOnly, Category="Widget Controller")
+	TObjectPtr<APlayerState> PlayerState;
 };

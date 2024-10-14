@@ -6,7 +6,6 @@
 #include "Blueprint/UserWidget.h"
 #include "RougelikeProject/UI/Widget/RLUserWidget.h"
 
-
 UOverlayWidgetController* ARLHUD::GetOverlayWidgetController(const FWidgetControllerParams WCParams)
 {
 	if(OverlayWidgetController == nullptr)
@@ -33,7 +32,43 @@ UAttributeMenuWidgetController* ARLHUD::GetAttributeMenuWidgetController(const F
 	return AttributeMenuWidgetController;
 }
 
-void ARLHUD::InitOverlay(APlayerController* PC, UAbilitySystemComponent* ASC, UAttributeSet* AS)
+ULevelMapWidgetController* ARLHUD::GetLevelMapWidgetController(const FWidgetControllerParams WCParams)
+{
+	if(LevelMapWidgetController == nullptr)
+	{
+		// 新建
+		LevelMapWidgetController = NewObject<ULevelMapWidgetController>(this, LevelMapWidgetControllerClass);
+		// 初始化
+		LevelMapWidgetController->SetWidgetControllerParams(WCParams);
+		LevelMapWidgetController->BindCallbacksToDependencies();
+	}
+	return LevelMapWidgetController;
+}
+
+void ARLHUD::ShowLevelMap(bool bShow)
+{
+	if(LevelMapWidgetController)
+		LevelMapWidgetController->ShowWidget(bShow);
+}
+
+void ARLHUD::ShowOverlay(bool bShow)
+{
+	if(OverlayWidgetController)
+		OverlayWidgetController->ShowWidget(bShow);
+}
+
+void ARLHUD::UpdateLevel(int CurNodeIndex, int LastNodeIndex)
+{
+	LevelMapWidgetController->UpdateLevel(CurNodeIndex, LastNodeIndex);
+}
+
+void ARLHUD::ShowAttributeMenu(bool bShow)
+{
+	if(AttributeMenuWidgetController)
+		AttributeMenuWidgetController->ShowWidget(bShow);
+}
+
+void ARLHUD::InitOverlay(APlayerController* PC, UAbilitySystemComponent* ASC, UAttributeSet* AS, APlayerState* PS)
 {
 	if(!ensureAlways(OverlayWidgetClass) || !ensureAlways(OverlayWidgetControllerClass)) return;
 	
@@ -41,7 +76,7 @@ void ARLHUD::InitOverlay(APlayerController* PC, UAbilitySystemComponent* ASC, UA
 
 	OverlayWidget = Cast<URLUserWidget>(Widget);
 
-	FWidgetControllerParams WidgetControllerParams(PC, ASC, AS);
+	FWidgetControllerParams WidgetControllerParams(PC, ASC, AS, PS);
 	
 	UOverlayWidgetController* MyOverlayWidgetController = GetOverlayWidgetController(WidgetControllerParams);
 
@@ -50,6 +85,28 @@ void ARLHUD::InitOverlay(APlayerController* PC, UAbilitySystemComponent* ASC, UA
 
 	// 初始化
 	OverlayWidgetController->BroadcastInitialValues();
+	
+	Widget->AddToViewport();
+}
+
+void ARLHUD::InitLevelMap(APlayerController* PC, UAbilitySystemComponent* ASC, UAttributeSet* AS, APlayerState* PS)
+{
+	if(!ensureAlways(LevelMapWidgetClass) || !ensureAlways(LevelMapWidgetControllerClass)) return;
+
+	UUserWidget* Widget = CreateWidget<UUserWidget>(GetWorld(), LevelMapWidgetClass);
+
+	LevelMapWidget = Cast<ULevelMapWidget>(Widget);
+
+	FWidgetControllerParams WidgetControllerParams(PC, ASC, AS, PS);
+	
+	ULevelMapWidgetController* MyLevelMapWidgetController = GetLevelMapWidgetController(WidgetControllerParams);
+
+	LevelMapWidget->SetWidgetController(MyLevelMapWidgetController);
+
+	// 初始化
+	MyLevelMapWidgetController->BroadcastInitialValues();
+	MyLevelMapWidgetController->GenerateLevelNode();
+	MyLevelMapWidgetController->GenerateLevelLine();
 	
 	Widget->AddToViewport();
 }
