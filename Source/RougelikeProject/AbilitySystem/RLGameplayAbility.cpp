@@ -15,3 +15,4 @@ ARLCharacterBase* URLGameplayAbility::GetCharacterBase()
 		return Ret;
 	return nullptr;
 }
+

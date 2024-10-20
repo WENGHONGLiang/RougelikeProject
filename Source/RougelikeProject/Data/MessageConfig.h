@@ -29,7 +29,6 @@ class ROUGELIKEPROJECT_API UMessageConfig : public UDataAsset
 	GENERATED_BODY()
 	
 public:
-	// 根据 Tag 查找 IA
 	FRLMessageInfo FindMessageTag(const FGameplayTag& MessageTag, bool bLogNotFound = false);
 	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)

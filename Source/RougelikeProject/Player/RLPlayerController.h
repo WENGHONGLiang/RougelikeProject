@@ -13,15 +13,17 @@
 #include "RLPlayerController.generated.h"
 
 class UInputMappingContext;
-/**
- * 
- */
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnClickSignature);
+
 UCLASS()
 class ROUGELIKEPROJECT_API ARLPlayerController : public APlayerController
 {
 	GENERATED_BODY()
 public:
 	ARLPlayerController();
+
+	FOnClickSignature OnMouseClickEvent;
 
 protected:
 	virtual void BeginPlay() override;
@@ -52,6 +54,8 @@ private:
 
 	UPROPERTY(EditDefaultsOnly, Category="Input")
 	TObjectPtr<URLInputConfig> InputConfig;
+
+	
 
 	UPROPERTY()
 	URLAbilitySystemComponent* RLAbilitySystemComponent;

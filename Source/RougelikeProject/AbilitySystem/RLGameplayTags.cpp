@@ -129,4 +129,8 @@ void FRLGameplayTags::InitializeNativeGameplayTags()
 	GameplayTags.GE_Damage_Normal = UGameplayTagsManager::Get().AddNativeGameplayTag(
 		FName("GE.Damage.Normal")
 		);
+	
+	GameplayTags.HeroAbility_Empty = UGameplayTagsManager::Get().AddNativeGameplayTag(
+		FName("HeroAbility.Empty")
+		);
 }

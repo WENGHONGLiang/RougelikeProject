@@ -41,6 +41,7 @@ void ARLPlayerController::BeginPlay()
 		ARLPlayerState* RLPlayerState = GetPlayerState<ARLPlayerState>();
 		HUD->InitLevelMap(this, RLPlayerState->GetAbilitySystemComponent(), RLPlayerState->GetAttributeSet(), RLPlayerState);
 	}
+	
 }
 
 void ARLPlayerController::SetupInputComponent()
@@ -188,5 +189,11 @@ void ARLPlayerController::AbilityInputTagReleased(FGameplayTag InputTag)
 		FollowTime = 0.f;
 		return;
 	}
+
+	if(InputTag.MatchesTagExact(FRLGameplayTags::Get().InputTag_LMB) || InputTag.MatchesTagExact(FRLGameplayTags::Get().InputTag_RMB))
+	{
+		OnMouseClickEvent.Broadcast();
+	}
+	
 	GetASC()->AbilityInputTagReleased(InputTag);
 }

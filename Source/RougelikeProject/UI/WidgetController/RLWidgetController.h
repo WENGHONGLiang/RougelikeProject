@@ -52,6 +52,8 @@ public:
 	
 	UFUNCTION(BlueprintCallable)
 	void ShowWidget(bool bShow);
+
+	FVector2D GetCursorPosition() const;
 	
 protected:
 	

@@ -45,16 +45,35 @@ ULevelMapWidgetController* ARLHUD::GetLevelMapWidgetController(const FWidgetCont
 	return LevelMapWidgetController;
 }
 
+UAbilityMenuWidgetController* ARLHUD::GetAbilityMenuWidgetController(const FWidgetControllerParams WCParams)
+{
+	if(AbilityMenuWidgetController == nullptr)
+	{
+		// 新建
+		AbilityMenuWidgetController = NewObject<UAbilityMenuWidgetController>(this, AbilityMenuWidgetControllerClass);
+		// 初始化
+		AbilityMenuWidgetController->SetWidgetControllerParams(WCParams);
+		AbilityMenuWidgetController->BindCallbacksToDependencies();
+	}
+	return AbilityMenuWidgetController;
+}
+
 void ARLHUD::ShowLevelMap(bool bShow)
 {
 	if(LevelMapWidgetController)
 		LevelMapWidgetController->ShowWidget(bShow);
 }
 
-void ARLHUD::ShowOverlay(bool bShow)
+void ARLHUD::ShowBattleWidget(bool bShow)
 {
 	if(OverlayWidgetController)
 		OverlayWidgetController->ShowWidget(bShow);
+
+	if(AbilityMenuWidgetController)
+		AbilityMenuWidgetController->ShowWidget(bShow);
+
+	if(AttributeMenuWidgetController)
+		AttributeMenuWidgetController->ShowWidget(bShow);
 }
 
 void ARLHUD::UpdateLevel(int CurNodeIndex, int LastNodeIndex)
@@ -86,6 +105,26 @@ void ARLHUD::InitOverlay(APlayerController* PC, UAbilitySystemComponent* ASC, UA
 	// 初始化
 	OverlayWidgetController->BroadcastInitialValues();
 	
+	Widget->AddToViewport();
+}
+
+void ARLHUD::InitAbilityMenu(APlayerController* PC, UAbilitySystemComponent* ASC, UAttributeSet* AS, APlayerState* PS)
+{
+	if(!ensureAlways(AbilityMenuWidgetClass) || !ensureAlways(AbilityMenuWidgetControllerClass)) return;
+	
+	UUserWidget* Widget = CreateWidget<UUserWidget>(GetWorld(), AbilityMenuWidgetClass);
+
+	AbilityMenuWidget = Cast<URLAbilityMenuWidget>(Widget);
+
+	FWidgetControllerParams WidgetControllerParams(PC, ASC, AS, PS);
+	
+	UAbilityMenuWidgetController* AbilityMenuController = GetAbilityMenuWidgetController(WidgetControllerParams);
+
+	AbilityMenuWidget->SetWidgetController(AbilityMenuController);
+	
+	AbilityMenuController->BroadcastInitialValues();
+	
+	GEngine->AddOnScreenDebugMessage(-1, 2, FColor::Yellow, "Add Ability Menu");
 	Widget->AddToViewport();
 }
 

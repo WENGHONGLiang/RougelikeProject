@@ -4,6 +4,7 @@
 #include "RLAbilitySystemComponent.h"
 
 #include "RLGameplayAbility.h"
+#include "RLGameplayTags.h"
 
 void URLAbilitySystemComponent::BindGameplayEffectAppliedDelegate()
 {
@@ -26,12 +27,30 @@ void URLAbilitySystemComponent::AddCharacterAbilities(const TArray<TSubclassOf<U
 	for(auto AbilityClass : StartupAbilities)
 	{
 		FGameplayAbilitySpec AbilitySpec = FGameplayAbilitySpec(AbilityClass, 1);
-
-		if(const URLGameplayAbility* Ability = Cast<URLGameplayAbility>(AbilitySpec.Ability))
+	
+		if(URLGameplayAbility* Ability = Cast<URLGameplayAbility>(AbilitySpec.Ability))
 		{
 			AbilitySpec.DynamicAbilityTags.AddTag(Ability->StartupInputTag);
 			// 只赋予，不激活
 			GiveAbility(AbilitySpec);
+			// 由AbilityMenuWidgetController接收使用
+			OnGameplayAbilityGive.Broadcast(Ability->StartupInputTag, Ability->AbilityTags.First(), Ability->BaseDamage);
+		}
+	}
+}
+
+void URLAbilitySystemComponent::UpdateCharacterAbilitiesInput(const FGameplayTag& AbilityTag, const FGameplayTag& NewInputTag)
+{
+	if(AbilityTag == FRLGameplayTags::Get().HeroAbility_Empty)
+		return;
+
+	for(auto& AbilitySpec : GetActivatableAbilities())
+	{
+		if(AbilitySpec.Ability->AbilityTags.First().MatchesTagExact(AbilityTag))
+		{
+			AbilitySpec.DynamicAbilityTags.Reset();
+			AbilitySpec.DynamicAbilityTags.AddTag(NewInputTag);
+			break;
 		}
 	}
 }
@@ -79,3 +98,23 @@ void URLAbilitySystemComponent::ActivateAbilityDirectly(const FGameplayTag& Inpu
 	}
 }
 
+void URLAbilitySystemComponent::CheckAbilityCoolDown()
+{
+	for(auto& AbilitySpec : GetActivatableAbilities())
+	{
+		UGameplayAbility* Ability = AbilitySpec.GetPrimaryInstance();
+		if(Ability)
+		{
+			float CooldownRemain;
+			float CooldownDuration;
+			FGameplayAbilityActorInfo ActorInfo = Ability->GetActorInfo();
+			Ability->GetCooldownTimeRemainingAndDuration(AbilitySpec.Handle, &ActorInfo, CooldownRemain, CooldownDuration);
+
+			if(CooldownRemain > 0.001f)
+			{
+				float Percent = CooldownRemain / CooldownDuration;
+				OnCoolDownTimeUpdate.Broadcast(AbilitySpec.DynamicAbilityTags.First(), Percent);
+			}
+		}
+	}
+}

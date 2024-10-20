@@ -24,6 +24,11 @@ void ARLGameMode::StartLevel(int NodeIndex, FName LevelName)
 	CurrentLevelNodeIndex = NodeIndex;
 	
 	LoadLevel(LevelName);
+
+	APawn* Pawn = UGameplayStatics::GetPlayerPawn(this, 0);
+	if(Pawn)
+		Pawn->Destroy();
+	
 	RestartPlayer(UGameplayStatics::GetPlayerController(this, 0));
 }
 
@@ -32,10 +37,10 @@ void ARLGameMode::EndLevel()
 	if(RLHUD == nullptr)
 		RLHUD = Cast<ARLHUD>(UGameplayStatics::GetPlayerController(this, 0)->GetHUD());
 	RLHUD->ShowLevelMap(true);
-	RLHUD->ShowOverlay(false);
+	RLHUD->ShowBattleWidget(false);
 	
 	RLHUD->UpdateLevel(CurrentLevelNodeIndex, LastLevelNodeIndex); // 更新地图
-
+	
 	APawn* Pawn = UGameplayStatics::GetPlayerPawn(this, 0);
 	if(Pawn)
 		Pawn->Destroy();

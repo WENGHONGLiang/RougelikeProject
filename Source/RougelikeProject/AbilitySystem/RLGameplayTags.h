@@ -50,6 +50,9 @@ public:
 	/* GE Tag, 用于技能判定 和 数值传递 */
 	FGameplayTag GE_Damage;
 	FGameplayTag GE_Damage_Normal;
+
+	/* 英雄技能, 这里只定义空技能用于控件初始化, 其它技能Tag直接在编辑器添加 */
+	FGameplayTag HeroAbility_Empty;
 	
 private:
 	// instance

@@ -25,3 +25,10 @@ void URLWidgetController::ShowWidget(bool bShow)
 {
 	OnShow.Broadcast(bShow);
 }
+
+FVector2D URLWidgetController::GetCursorPosition() const
+{
+	double X, Y;
+	PlayerController->GetMousePosition(X, Y);
+	return FVector2D(X, Y);
+}

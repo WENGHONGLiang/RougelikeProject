@@ -7,6 +7,8 @@
 #include "RLAbilitySystemComponent.generated.h"
 
 DECLARE_MULTICAST_DELEGATE_OneParam(FEffectAssetTags, const FGameplayTagContainer&)
+DECLARE_MULTICAST_DELEGATE_TwoParams(FCoolDownUpdateDelegate, const FGameplayTag, float)
+DECLARE_MULTICAST_DELEGATE_ThreeParams(FAbilityEvent, const FGameplayTag, const FGameplayTag, float)
 
 UCLASS()
 class ROUGELIKEPROJECT_API URLAbilitySystemComponent : public UAbilitySystemComponent
@@ -16,8 +18,15 @@ class ROUGELIKEPROJECT_API URLAbilitySystemComponent : public UAbilitySystemComp
 public:
 	FEffectAssetTags OnGameplayEffectApplied;
 
+	FAbilityEvent OnGameplayAbilityGive;
+	
+	FCoolDownUpdateDelegate OnCoolDownTimeUpdate;
+	
+
 	// 添加一系列的能力 // 不激活
 	void AddCharacterAbilities(const TArray<TSubclassOf<UGameplayAbility>>& StartupAbilities);
+	
+	void UpdateCharacterAbilitiesInput(const FGameplayTag& AbilityTag, const FGameplayTag& NewInputTag);
 
 	// 通过输入绑定启用技能 // 用于玩家
 	void AbilityInputTagReleased(const FGameplayTag& InputTag);
@@ -31,4 +40,7 @@ public:
 
 	UFUNCTION()
 	void OnEffectApplied(UAbilitySystemComponent* AbilitySystemComponent, const FGameplayEffectSpec& GameplayEffectSpec, FActiveGameplayEffectHandle ActiveGameplayEffectHandle);
+
+	UFUNCTION(BlueprintCallable)
+	void CheckAbilityCoolDown();
 };

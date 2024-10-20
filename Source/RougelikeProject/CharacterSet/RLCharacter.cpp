@@ -9,6 +9,16 @@
 #include "RougelikeProject/Player/RLPlayerState.h"
 #include "RougelikeProject/UI/HUD/RLHUD.h"
 
+void ARLCharacter::Tick(float DeltaSeconds)
+{
+	Super::Tick(DeltaSeconds);
+
+	if(RLAbilitySystemComponent)
+	{
+		RLAbilitySystemComponent->CheckAbilityCoolDown();
+	}
+}
+
 void ARLCharacter::PossessedBy(AController* NewController)
 {
 	Super::PossessedBy(NewController);
@@ -26,16 +36,16 @@ void ARLCharacter::InitAbilityActorInfo()
 
 	// 从 PlayerState 中取出 ASC
 	AbilitySystemComponent = RLPlayerState->GetAbilitySystemComponent();
+	RLAbilitySystemComponent = Cast<URLAbilitySystemComponent>(AbilitySystemComponent);
 	AttributeSet = RLPlayerState->GetAttributeSet();
 	CharacterLevel = RLPlayerState->GetPlayerLevel();
-	URLAbilitySystemComponent* RLASC = Cast<URLAbilitySystemComponent>(AbilitySystemComponent);
 	
 	if(!RLPlayerState->HasInit()) // 第一次需要对属性、技能初始化
 	{
 		AbilitySystemComponent->InitAbilityActorInfo(RLPlayerState, this);
 		
 		// ASC绑定GE被应用的回调函数
-		RLASC->BindGameplayEffectAppliedDelegate();
+		RLAbilitySystemComponent->BindGameplayEffectAppliedDelegate();
 
 		// 初始属性 
 		FCharacterClassDefaultInfo info = CharacterInfo->GetClassDefaultInfo(CharacterType);
@@ -43,21 +53,27 @@ void ARLCharacter::InitAbilityActorInfo()
 
 		// 初始技能
 		AddCharacterAbilities();
+		
 		RLPlayerState->Init();
 	}
 	else // 后续只需要绑定新的Pawn
 	{
 		AbilitySystemComponent->SetAvatarActor(this);
+
+		if(ARLHUD* HUD = Cast<ARLHUD>(RLPlayerController->GetHUD()))
+		{
+			HUD->InitOverlay(RLPlayerController, AbilitySystemComponent, AttributeSet, RLPlayerState);
+		}
+	
+		if(ARLHUD* HUD = Cast<ARLHUD>(RLPlayerController->GetHUD()))
+		{
+			HUD->InitAbilityMenu(RLPlayerController, AbilitySystemComponent, AttributeSet, RLPlayerState);
+		}
 	}
 	
-	RLASC->OnGameplayEffectApplied.AddUObject(this, &ARLCharacter::GameplayEffectApplied);
+	RLAbilitySystemComponent->OnGameplayEffectApplied.AddUObject(this, &ARLCharacter::GameplayEffectApplied);
 	Cast<UAttributeSetBase>(AttributeSet)->OnCharacterDie.AddDynamic(this, &ARLCharacter::CharacterDie);
 	
-	// Set OverlayWidget/WidgetController in HUD
-	if(ARLHUD* HUD = Cast<ARLHUD>(RLPlayerController->GetHUD()))
-	{
-		HUD->InitOverlay(RLPlayerController, AbilitySystemComponent, AttributeSet, RLPlayerState);
-	}
 }
 
 void ARLCharacter::GameplayEffectApplied(const FGameplayTagContainer& TagContainer)

@@ -287,7 +287,7 @@ bool ULevelMapWidgetController::IsOnSegment(FVector2D a, FVector2D b, FVector2D 
 		return false;
 	
 	return std::min(a.X, b.X) <= p.X-0.1 && p.X+0.1 <= std::max(a.X, b.X) &&
-		   std::min(a.Y, b.Y) <= p.Y-0.1 && p.Y+0.1 <= std::max(a.Y, b.Y);
+		   std::min(a.Y, b.Y) <= p.Y && p.Y <= std::max(a.Y, b.Y);
 }
 
 bool ULevelMapWidgetController::IsIntersecting(FVector2D p1, FVector2D p2, FVector2D p3, FVector2D p4)
