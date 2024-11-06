@@ -119,21 +119,50 @@ void ULevelMapWidgetController::GenerateLevelNode()
 			{
 				if(FMath::RandRange(0, 2) == 0) // 随机一下
 				{
-					// TODO: 现在都是战斗关卡，未来要加上商店等其它关卡
 					FName LevelName = "";
-					if(X < 6) // 低难度
+					
+					NodeType nodeType = FMath::RandRange(0, 9) <= 7 ? Battle : Shop;
+					
+					if(nodeType == Battle)
 					{
-						int LevelIndex = FMath::RandRange(0, BattleLevelInfo_1.LevelMapName.Num()-1);
-						LevelName = BattleLevelInfo_1.LevelMapName[LevelIndex];
+						if(X <= 4) // 低难度
+						{
+							int LevelIndex = FMath::RandRange(0, BattleLevelInfo_1.LevelMapName.Num()-1);
+							LevelName = BattleLevelInfo_1.LevelMapName[LevelIndex];
+						}
+						else if(X <= 9) // 中难度
+						{
+							int LevelIndex = FMath::RandRange(0, BattleLevelInfo_2.LevelMapName.Num()-1);
+							LevelName = BattleLevelInfo_2.LevelMapName[LevelIndex];
+						}
+						else // 高难度
+						{
+							int LevelIndex = FMath::RandRange(0, BattleLevelInfo_3.LevelMapName.Num()-1);
+							LevelName = BattleLevelInfo_3.LevelMapName[LevelIndex];
+						}
 					}
-					else // 高难度
+					
+					else if(nodeType == Shop)
 					{
-						int LevelIndex = FMath::RandRange(0, BattleLevelInfo_3.LevelMapName.Num()-1);
-						LevelName = BattleLevelInfo_3.LevelMapName[LevelIndex];
+						if(X <= 4) // 低难度
+						{
+							int LevelIndex = FMath::RandRange(0, ShopLevelInfo_1.LevelMapName.Num()-1);
+							LevelName = ShopLevelInfo_1.LevelMapName[LevelIndex];
+						}
+						else if(X <= 9) // 中难度
+						{
+							int LevelIndex = FMath::RandRange(0, ShopLevelInfo_2.LevelMapName.Num()-1);
+							LevelName = ShopLevelInfo_2.LevelMapName[LevelIndex];
+						}
+						else // 高难度
+						{
+							int LevelIndex = FMath::RandRange(0, ShopLevelInfo_3.LevelMapName.Num()-1);
+							LevelName = ShopLevelInfo_3.LevelMapName[LevelIndex];
+						}
 					}
 					
 					FVector2D NodePosition = FVector2D(StartPos.X + GridSize.X * X * 2, StartPos.Y + GridSize.Y * Y * 2);
-					CreateNode(NodeMap, FVector2d(1.5, 1.5), NodePosition, X, Y, Battle, Lock, LevelName, CountNode);
+					CreateNode(NodeMap, FVector2d(1.5, 1.5), NodePosition, X, Y, nodeType, Lock, LevelName, CountNode);
 					if(ColMap.Contains(X))
 						ColMap[X]++;
 					else

@@ -5,13 +5,16 @@
 
 #include "RougelikeProject/AbilitySystem/RLGameplayTags.h"
 #include "RougelikeProject/ArributeBaseSet/AttributeSetBase.h"
+#include "RougelikeProject/Player/RLPlayerState.h"
 
 void UOverlayWidgetController::BroadcastInitialValues()
 {
 	const UAttributeSetBase* WAttributeSet = Cast<UAttributeSetBase>(AttributeSet);
+	ARLPlayerState* RLPS = Cast<ARLPlayerState>(PlayerState);
 
 	OnHealthChanged.Broadcast(WAttributeSet->GetHealth());
 	OnMaxHealthChanged.Broadcast(WAttributeSet->GetMaxHealth());
+	OnMoneyChanged.Broadcast(RLPS->GetMoney());
 }
 
 void UOverlayWidgetController::BindCallbacksToDependencies()
@@ -34,19 +37,30 @@ void UOverlayWidgetController::BindCallbacksToDependencies()
 				OnMaxHealthChanged.Broadcast(Data.NewValue);
 			}
 		);
+
+	ARLPlayerState* RLPS = Cast<ARLPlayerState>(PlayerState);
+	RLPS->OnMoneyChanged.AddLambda([this](int32 NewMoney)
+		{
+			OnMoneyChanged.Broadcast(NewMoney);
+		});
 }
 
-void UOverlayWidgetController::SetMessage(FGameplayTag MessageTag)
+void UOverlayWidgetController::SetPropertyMessage(FText Message, UTexture2D* Image)
 {
-	FRLMessageInfo info = MessageConfig->FindMessageTag(MessageTag);
-	if(MessageTag.MatchesTag(FRLGameplayTags::Get().Message_Tip))
-	{
-		OnTipMessage.Broadcast(info);
-	}
-	else if(MessageTag.MatchesTag(FRLGameplayTags::Get().Message_Property))
-	{
-		OnPropertyMessage.Broadcast(info);
-	}
+	if(Message.IsEmpty())
+		return;
+	
+	FRLMessageInfo info;
+	info.Message = Message;
+	info.Image = Image;
+
+	OnPropertyMessage.Broadcast(info);
+}
+
+void UOverlayWidgetController::SetTipMessageByTag(FGameplayTag MessageTag)
+{
+	const FRLMessageInfo info = MessageConfig->FindMessageTag(MessageTag);
+	OnTipMessage.Broadcast(info);
 }
 
 void UOverlayWidgetController::HideMessage(MessageHideMode mode)

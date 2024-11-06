@@ -59,7 +59,7 @@ protected:
 	bool isAlive;
 
 	UFUNCTION()
-	void CharacterDie();
+	virtual void CharacterDie();
 	
 	UFUNCTION(BlueprintImplementableEvent)
 	void OnBeAttacked();

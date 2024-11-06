@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Kismet/BlueprintFunctionLibrary.h"
+#include "RougelikeProject/UI/WidgetController/AbilityMenuWidgetController.h"
 #include "RougelikeProject/UI/WidgetController/AttributeMenuWidgetController.h"
 #include "RougelikeProject/UI/WidgetController/OverlayWidgetController.h"
 #include "RLAbilitySystemLibrary.generated.h"
@@ -22,4 +23,7 @@ public:
 
 	UFUNCTION(BlueprintPure, Category="WAbilitySystemLibary|WidgetController")
 	static UAttributeMenuWidgetController* GetAttributeMenuWidgetController(const UObject* WorldContextObject);
+	
+	UFUNCTION(BlueprintPure, Category="WAbilitySystemLibary|WidgetController")
+	static UAbilityMenuWidgetController* GetAbilityMenuWidgetController(const UObject* WorldContextObject);
 };

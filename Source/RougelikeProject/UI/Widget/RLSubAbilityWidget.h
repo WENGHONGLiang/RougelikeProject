@@ -13,8 +13,9 @@ UCLASS()
 class ROUGELIKEPROJECT_API URLSubAbilityWidget : public URLUserWidget
 {
 	GENERATED_BODY()
-	
 public:
+	URLSubAbilityWidget();
+	
 	UPROPERTY(meta = (BindWidget), BlueprintReadOnly)
 	UButton* AbilityButton;
 

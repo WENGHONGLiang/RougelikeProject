@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/GameModeBase.h"
+#include "RougelikeProject/Actor/PropertyActor.h"
 #include "RougelikeProject/UI/HUD/RLHUD.h"
 #include "RougelikeProject/UI/Widget/LevelMapWidget.h"
 #include "RougelikeProject/UI/WidgetController/LevelMapWidgetController.h"
@@ -16,22 +17,39 @@ UCLASS()
 class ROUGELIKEPROJECT_API ARLGameMode : public AGameModeBase
 {
 	GENERATED_BODY()
-private:
-	int CurrentLevelNodeIndex;
-	int LastLevelNodeIndex;
-	FName CurrentLevelName;
-	ARLHUD* RLHUD;
 	
 public:
 	void BeginPlay() override;
-
+	
+	/* --- Level --- */
 	UFUNCTION(BlueprintCallable)
 	void StartLevel(int NodeIndex, FName LevelName);
 
 	UFUNCTION(BlueprintCallable)
 	void EndLevel();
 
+	/* --- 技能 --- */
+	void SpawnAblityActorAroundPlayer(FGameplayTag AbilityTag);
+	
+	void SpawnAbilityActorAtLocation(FGameplayTag AbilityTag, FVector3d Location);
+	
 private:
+	
+	ARLHUD* RLHUD;
+	
+	/* --- Level --- */
+	
+	int CurrentLevelNodeIndex;
+	int LastLevelNodeIndex;
+	FName CurrentLevelName;
+	
 	void LoadLevel(FName LevelName);
 	void UnLoadCurrentLevel();
+
+	/* --- 技能 --- */
+	UPROPERTY(EditAnywhere)
+	UAbilityConfig* AbilityConfig;
+	
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<APropertyActor> AbilityActorClass;
 };

@@ -6,6 +6,8 @@
 #include "GameplayTagContainer.h"
 #include "Components/SphereComponent.h"
 #include "GameFramework/Actor.h"
+#include "RougelikeProject/CharacterSet/RLCharacter.h"
+#include "RougelikeProject/Player/RLPlayerController.h"
 #include "PropertyActor.generated.h"
 
 /* 装备 和 技能 的基类 */
@@ -23,6 +25,9 @@ protected:
 
 public:	
 	virtual void Tick(float DeltaTime) override;
+	
+	UPROPERTY(EditAnywhere)
+	FGameplayTag MessageTipTag;
 
 protected:
 	UPROPERTY(VisibleAnywhere)
@@ -33,16 +38,24 @@ protected:
 	
 	UPROPERTY(VisibleAnywhere)
 	UStaticMeshComponent* MeshComp; // 网格
-
-	UPROPERTY(EditAnywhere)
-	FGameplayTag MessageTag;
 	
-	UPROPERTY(EditAnywhere)
-	FGameplayTag TipTag;
+	UPROPERTY()
+	ARLPlayerController* PlayerController;
+	
+	UPROPERTY()
+	ARLCharacter* PlayerCharacter;
 
 	UFUNCTION()
-	void BeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+	virtual void BeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 	
 	UFUNCTION()
-	void EndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
+	virtual void EndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
+
+	UFUNCTION()
+	virtual void OnPickUp();
+
+	UFUNCTION()
+	void Destroyed() override;
+	
+	bool bBindPickEvent = false;
 };

@@ -4,17 +4,19 @@
 #include "AbilityMenuWidgetController.h"
 
 #include "AbilitySystemComponent.h"
+#include "Kismet/GameplayStatics.h"
 #include "Net/RepLayout.h"
 #include "RougelikeProject/AbilitySystem/RLAbilitySystemComponent.h"
 #include "RougelikeProject/AbilitySystem/RLGameplayAbility.h"
 #include "RougelikeProject/AbilitySystem/RLGameplayTags.h"
+#include "RougelikeProject/GameMode/RLGameMode.h"
 #include "RougelikeProject/Player/RLPlayerController.h"
 
 UAbilityMenuWidgetController::UAbilityMenuWidgetController()
 {
 	bDraggingAbility = false;
 	SourceAbilityTag = FRLGameplayTags::Get().HeroAbility_Empty;
-	SourceInputTag = FGameplayTag::EmptyTag;
+	SourceInputTag = FRLGameplayTags::Get().InputTag_Empty;
 }
 
 void UAbilityMenuWidgetController::BindCallbacksToDependencies()
@@ -81,7 +83,7 @@ void UAbilityMenuWidgetController::OnAbilityButtonClicked(const FGameplayTag& In
 
 		OnStartDrag.Broadcast(SourceAbilityInfo.AbilityImage);
 	}
-	else if(bDraggingAbility) // 选中目标技能
+	else if(bDraggingAbility && !SourceInputTag.MatchesTagExact(FRLGameplayTags::Get().InputTag_Empty)) // 选中目标技能 // 手上的源技能绑定过
 	{
 		FRLAbilityInfo& SourceAbilityInfo = AbilityConfig->FindAbilityInfo(SourceAbilityTag);
 		FRLAbilityInfo& TargetAbilityInfo = AbilityConfig->FindAbilityInfo(AbilityTag);
@@ -101,28 +103,78 @@ void UAbilityMenuWidgetController::OnAbilityButtonClicked(const FGameplayTag& In
 		
 		bDraggingAbility = false;
 		SourceAbilityTag = FRLGameplayTags::Get().HeroAbility_Empty;
-		SourceInputTag = FGameplayTag::EmptyTag;
+		SourceInputTag = FRLGameplayTags::Get().InputTag_Empty;
 		
 		OnStopDrag.Broadcast(EmptyAbilityInfo.AbilityImage);
 	}
+	else if(bDraggingAbility && SourceInputTag.MatchesTagExact(FRLGameplayTags::Get().InputTag_Empty)) // 选中目标技能 // 手上的技能未绑定
+	{
+		FRLAbilityInfo& SourceAbilityInfo = AbilityConfig->FindAbilityInfo(SourceAbilityTag);
+		FRLAbilityInfo& TargetAbilityInfo = AbilityConfig->FindAbilityInfo(AbilityTag);
+		FGameplayTag CurrentAbilityTag = SourceAbilityTag;
+		
+		// 更新手上技能
+		if(AbilityTag.MatchesTagExact(FRLGameplayTags::Get().HeroAbility_Empty))
+		{
+			bDraggingAbility = false;
+			OnStopDrag.Broadcast(TargetAbilityInfo.AbilityImage);
+		}
+		else
+		{
+			SourceAbilityTag = AbilityTag;
+			OnStartDrag.Broadcast(TargetAbilityInfo.AbilityImage);
+		}
+		
+		// 把当前输入键位交给手上技能
+		OnUpdateAbility.Broadcast(InputTag, SourceAbilityInfo);
+		
+		URLAbilitySystemComponent* RlAbilitySystemComponent = Cast<URLAbilitySystemComponent>(AbilitySystemComponent);
+		RlAbilitySystemComponent->UpdateCharacterAbilitiesInput(CurrentAbilityTag, InputTag);
+		RlAbilitySystemComponent->UpdateCharacterAbilitiesInput(TargetAbilityInfo.AbilityTag, SourceInputTag);
+	}
+}
+
+void UAbilityMenuWidgetController::AddAbility(const FGameplayTag& AbilityTag)
+{
+	if(bDraggingAbility)
+	{
+		DiscardAbility();
+	}
+	
+	FRLAbilityInfo& AbilityInfo = AbilityConfig->FindAbilityInfo(AbilityTag);
+	OnStartDrag.Broadcast(AbilityInfo.AbilityImage);
+	SourceInputTag = FRLGameplayTags::Get().InputTag_Empty;
+	SourceAbilityTag = AbilityTag;
+	bDraggingAbility = true;
 }
 
 void UAbilityMenuWidgetController::OnMouseClick()
 {
 	if(bDraggingAbility)
 	{
-		FTimerDelegate Delegate = FTimerDelegate::CreateUObject(this, &UAbilityMenuWidgetController::CancelDrag);
+		FTimerDelegate Delegate = FTimerDelegate::CreateUObject(this, &UAbilityMenuWidgetController::DiscardAbility);
 		GetWorld()->GetTimerManager().SetTimer(DelayReleaseDragTimerHandle, Delegate, 0.025f, false);
 	}
 }
 
-void UAbilityMenuWidgetController::CancelDrag()
+void UAbilityMenuWidgetController::DiscardAbility()
 {
 	FRLAbilityInfo& EmptyAbilityInfo = AbilityConfig->FindAbilityInfo(FRLGameplayTags::Get().HeroAbility_Empty);
 	OnStopDrag.Broadcast(EmptyAbilityInfo.AbilityImage);
 	
-	FRLAbilityInfo& SourceAbilityInfo = AbilityConfig->FindAbilityInfo(SourceAbilityTag);
-	OnUpdateAbility.Broadcast(SourceInputTag, SourceAbilityInfo);
-
+	//FRLAbilityInfo& SourceAbilityInfo = AbilityConfig->FindAbilityInfo(SourceAbilityTag);
+	//OnUpdateAbility.Broadcast(SourceInputTag, SourceAbilityInfo);
+	
+	URLAbilitySystemComponent* RlAbilitySystemComponent = Cast<URLAbilitySystemComponent>(AbilitySystemComponent);
+	RlAbilitySystemComponent->RemoveCharacterAblity(SourceAbilityTag);
+	
+	OnUpdateCoolDown.Broadcast(SourceInputTag, 0);
+	
+	// Spawn Ability Actor
+	Cast<ARLGameMode>(UGameplayStatics::GetGameMode(this))->SpawnAblityActorAroundPlayer(SourceAbilityTag);
+	
+	SourceAbilityTag = FRLGameplayTags::Get().HeroAbility_Empty;
+	SourceInputTag = FRLGameplayTags::Get().InputTag_Empty;
 	bDraggingAbility = false;
 }
+

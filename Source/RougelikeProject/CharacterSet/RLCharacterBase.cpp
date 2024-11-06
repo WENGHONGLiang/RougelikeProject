@@ -47,12 +47,13 @@ void ARLCharacterBase::GameplayEffectApplied(const FGameplayTagContainer& TagCon
 {
 	FRLGameplayTags GameplayTags = FRLGameplayTags::Get();
 	
-	if(TagContainer.HasTag(GameplayTags.GE_Damage))
+	bool bRolling = GetAbilitySystemComponent()->GetOwnedGameplayTags().HasTag(GameplayTags.HeroAbility_Roll);
+	if(TagContainer.HasTag(GameplayTags.GE_Damage) && !bRolling)
 	{
 		OnBeAttacked();
 	}
 
-	if(TagContainer.HasTag(GameplayTags.GE_Damage_Normal))
+	if(TagContainer.HasTag(GameplayTags.GE_Damage_Normal) && !bRolling)
 	{
 		OnBeNormalAttacked();
 	}

@@ -35,6 +35,10 @@ struct FCharacterClassDefaultInfo
 	UPROPERTY(EditDefaultsOnly)
 	FText CharacterDescription = FText();
 
+	// 杀死敌人得到金币
+	UPROPERTY(EditDefaultsOnly)
+	int32 RewardMoney;
+
 	// 其它特性，如初始技能...
 };
 

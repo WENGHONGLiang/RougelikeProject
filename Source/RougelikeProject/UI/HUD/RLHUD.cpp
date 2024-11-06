@@ -58,6 +58,19 @@ UAbilityMenuWidgetController* ARLHUD::GetAbilityMenuWidgetController(const FWidg
 	return AbilityMenuWidgetController;
 }
 
+UShopWidgetController* ARLHUD::GetShopWidgetController(const FWidgetControllerParams WCParams)
+{
+	if(ShopWidgetController == nullptr)
+	{
+		// 新建
+		ShopWidgetController = NewObject<UShopWidgetController>(this, ShopWidgetControllerClass);
+		// 初始化
+		ShopWidgetController->SetWidgetControllerParams(WCParams);
+		ShopWidgetController->BindCallbacksToDependencies();
+	}
+	return ShopWidgetController;
+}
+
 void ARLHUD::ShowLevelMap(bool bShow)
 {
 	if(LevelMapWidgetController)
@@ -74,6 +87,18 @@ void ARLHUD::ShowBattleWidget(bool bShow)
 
 	if(AttributeMenuWidgetController)
 		AttributeMenuWidgetController->ShowWidget(bShow);
+}
+
+void ARLHUD::ShowShopWidget(bool bShow)
+{
+	ShopWidgetController->ShowWidget(bShow);
+}
+
+void ARLHUD::UpdateShopCommodity(bool bShow)
+{
+	ShopWidgetController->UpdateCommodity();
+	if(bShow)
+		ShowShopWidget(bShow);
 }
 
 void ARLHUD::UpdateLevel(int CurNodeIndex, int LastNodeIndex)
@@ -146,6 +171,23 @@ void ARLHUD::InitLevelMap(APlayerController* PC, UAbilitySystemComponent* ASC, U
 	MyLevelMapWidgetController->BroadcastInitialValues();
 	MyLevelMapWidgetController->GenerateLevelNode();
 	MyLevelMapWidgetController->GenerateLevelLine();
+	
+	Widget->AddToViewport();
+}
+
+void ARLHUD::InitShop(APlayerController* PC, UAbilitySystemComponent* ASC, UAttributeSet* AS, APlayerState* PS)
+{
+	if(!ensureAlways(ShopWidgetClass) || !ensureAlways(ShopWidgetControllerClass)) return;
+
+	UUserWidget* Widget = CreateWidget<UUserWidget>(GetWorld(), ShopWidgetClass);
+
+	ShopWidget = Cast<URLUserWidget>(Widget);
+
+	FWidgetControllerParams WidgetControllerParams(PC, ASC, AS, PS);
+	
+	UShopWidgetController* MyShopWidgetController = GetShopWidgetController(WidgetControllerParams);  
+
+	ShopWidget->SetWidgetController(MyShopWidgetController);
 	
 	Widget->AddToViewport();
 }

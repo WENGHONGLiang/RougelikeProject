@@ -16,3 +16,20 @@ UAbilitySystemComponent* ARLPlayerState::GetAbilitySystemComponent() const
 {
 	return AbilitySystemComponent;
 }
+
+void ARLPlayerState::AddMoney(int32 Amount)
+{
+	Money += Amount;
+	OnMoneyChanged.Broadcast(Money);
+}
+
+bool ARLPlayerState::CostMoney(int32 Amount)
+{
+	if(Money < Amount)
+		return false;
+	
+	Money -= Amount;
+	OnMoneyChanged.Broadcast(Money);
+
+	return true;
+}

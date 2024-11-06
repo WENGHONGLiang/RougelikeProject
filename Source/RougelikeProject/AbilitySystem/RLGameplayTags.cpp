@@ -61,6 +61,10 @@ void FRLGameplayTags::InitializeNativeGameplayTags()
 
 	/* --- Input Tag --- */
 
+	GameplayTags.InputTag_Empty = UGameplayTagsManager::Get().AddNativeGameplayTag(
+		FName("Input.Empty")
+		);
+	
 	GameplayTags.InputTag_LMB = UGameplayTagsManager::Get().AddNativeGameplayTag(
 		FName("Input.LMB"),
 		FString("Left Mouse Button Input")
@@ -89,6 +93,18 @@ void FRLGameplayTags::InitializeNativeGameplayTags()
 	GameplayTags.InputTag_4 = UGameplayTagsManager::Get().AddNativeGameplayTag(
 		FName("Input.4"),
 		FString("4 Button Input")
+		);
+	
+	GameplayTags.InputTag_Interact = UGameplayTagsManager::Get().AddNativeGameplayTag(
+		FName("Input.Interact")
+		);
+	
+	GameplayTags.InputTag_PickUp = UGameplayTagsManager::Get().AddNativeGameplayTag(
+		FName("Input.PickUp")
+		);
+	
+	GameplayTags.InputTag_Roll = UGameplayTagsManager::Get().AddNativeGameplayTag(
+		FName("Input.Roll")
 		);
 
 	
@@ -132,5 +148,9 @@ void FRLGameplayTags::InitializeNativeGameplayTags()
 	
 	GameplayTags.HeroAbility_Empty = UGameplayTagsManager::Get().AddNativeGameplayTag(
 		FName("HeroAbility.Empty")
+		);
+	
+	GameplayTags.HeroAbility_Roll = UGameplayTagsManager::Get().AddNativeGameplayTag(
+		FName("HeroAbility.Roll")
 		);
 }

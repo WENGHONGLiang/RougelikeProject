@@ -14,7 +14,7 @@
 
 class UInputMappingContext;
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnClickSignature);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnButtonClickSignature);
 
 UCLASS()
 class ROUGELIKEPROJECT_API ARLPlayerController : public APlayerController
@@ -23,7 +23,14 @@ class ROUGELIKEPROJECT_API ARLPlayerController : public APlayerController
 public:
 	ARLPlayerController();
 
-	FOnClickSignature OnMouseClickEvent;
+	FOnButtonClickSignature OnMouseClickEvent;
+	FOnButtonClickSignature OnInteractEvent;
+	FOnButtonClickSignature OnPickUpEvent;
+
+	UFUNCTION(BlueprintCallable)
+	void CallInteract() { OnInteractEvent.Broadcast(); };
+
+	void SetCanMove(const bool bCan) { bCanMove = bCan; }
 
 protected:
 	virtual void BeginPlay() override;
@@ -44,6 +51,8 @@ protected:
 	void AbilityInputTagPressed(FGameplayTag InputTag);
 	void AbilityInputTagReleased(FGameplayTag InputTag);
 	void AbilityInputTagHeld(FGameplayTag InputTag);
+
+	bool bCanMove = true;
 	
 private:
 	UPROPERTY(EditAnywhere, Category="Input")
@@ -54,9 +63,7 @@ private:
 
 	UPROPERTY(EditDefaultsOnly, Category="Input")
 	TObjectPtr<URLInputConfig> InputConfig;
-
 	
-
 	UPROPERTY()
 	URLAbilitySystemComponent* RLAbilitySystemComponent;
 
@@ -76,4 +83,12 @@ private:
 
 	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<USplineComponent> Spline;
+
+	// 闪避相关参数
+	float RollPressIntervalTime = 0.f;
+	float RollPressIntervalCD = 1.f;
+	bool bRolling = false;
+	bool bCanRoll = true;
+	float RollContinuousCD = 1.9f;
+	float RollContinuousTime = 0.f;
 };

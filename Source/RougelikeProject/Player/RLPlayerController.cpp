@@ -40,6 +40,7 @@ void ARLPlayerController::BeginPlay()
 	{
 		ARLPlayerState* RLPlayerState = GetPlayerState<ARLPlayerState>();
 		HUD->InitLevelMap(this, RLPlayerState->GetAbilitySystemComponent(), RLPlayerState->GetAttributeSet(), RLPlayerState);
+		HUD->InitShop(this, RLPlayerState->GetAbilitySystemComponent(), RLPlayerState->GetAttributeSet(), RLPlayerState);
 	}
 	
 }
@@ -59,6 +60,7 @@ void ARLPlayerController::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
 
+	// Move
 	CursorTrace();
 	AutoRun();
 	RotateWithCursor();
@@ -66,6 +68,29 @@ void ARLPlayerController::Tick(float DeltaSeconds)
 	if(MovePressTime < MovePressInterval)
 	{
 		MovePressTime += DeltaSeconds;
+	}
+
+	// Roll
+	if(bRolling)
+	{
+		RollPressIntervalTime += DeltaSeconds;
+	}
+	if(bRolling && RollPressIntervalTime > RollPressIntervalCD)
+	{
+		RollPressIntervalTime = 0.f;
+		bRolling = false;
+	}
+
+	if(!bCanRoll)
+	{
+		RollContinuousTime += DeltaSeconds;
+	}
+	if(!bCanRoll && RollContinuousTime > RollContinuousCD)
+	{
+		RollContinuousTime = 0.f;
+		RollPressIntervalTime = 0.f;
+		bRolling = false;
+		bCanRoll = true;
 	}
 }
 
@@ -101,7 +126,6 @@ URLAbilitySystemComponent* ARLPlayerController::GetASC()
 {
 	if(RLAbilitySystemComponent == nullptr)
 	{
-		//RLAbilitySystemComponent = Cast<URLAbilitySystemComponent>(UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(GetPawn<APawn>()));
 		RLAbilitySystemComponent = Cast<URLAbilitySystemComponent>(GetPlayerState<ARLPlayerState>()->GetAbilitySystemComponent());
 	}
 	return RLAbilitySystemComponent;
@@ -110,6 +134,9 @@ URLAbilitySystemComponent* ARLPlayerController::GetASC()
 
 void ARLPlayerController::Move(const FInputActionValue& InputActionValue)
 {
+	if(!bCanMove)
+		return;
+	
 	const FRotator Rotation = GetControlRotation();
 	const FRotator YawRotation(0, Rotation.Yaw, 0);
 
@@ -125,13 +152,11 @@ void ARLPlayerController::Move(const FInputActionValue& InputActionValue)
 	ControllerPawn->AddMovementInput(FVector(0, 1, 0), InputAxisVector.X);
 }
 
-
 void ARLPlayerController::CursorTrace()
 {
 	GetHitResultUnderCursor(ECC_Visibility, false, CursorHit);
 	if(!CursorHit.bBlockingHit) return;
 }
-
 
 void ARLPlayerController::AbilityInputTagPressed(FGameplayTag InputTag)
 {
@@ -139,10 +164,30 @@ void ARLPlayerController::AbilityInputTagPressed(FGameplayTag InputTag)
 	{
 		bAutoRunning = false;
 	}
+
+	if(InputTag.MatchesTagExact(FRLGameplayTags::Get().InputTag_Roll) && bCanRoll)
+	{
+		const bool bRollSuccess = GetASC()->ActivateAbilityDirectly(InputTag);
+		if(!bRolling && bRollSuccess) // 第一次闪避
+		{
+			bRolling = true;
+			RollPressIntervalTime = 0.f;
+		}
+		else if(bRolling && bRollSuccess) // 连续两次闪避
+		{
+			bRolling = false;
+			bCanRoll = false;
+			RollContinuousTime = 0.f;
+			RollPressIntervalTime = 0.f;
+		}
+	}
 }
 
 void ARLPlayerController::AbilityInputTagHeld(FGameplayTag InputTag)
 {
+	if(InputTag.MatchesTagExact(FRLGameplayTags::Get().InputTag_Roll))
+		return;
+	
 	if(InputTag.MatchesTagExact(FRLGameplayTags::Get().InputTag_RMB))
 	{
 		// 点击移动
@@ -163,9 +208,21 @@ void ARLPlayerController::AbilityInputTagHeld(FGameplayTag InputTag)
 	GetASC()->AbilityInputTagHeld(InputTag);
 }
 
-
 void ARLPlayerController::AbilityInputTagReleased(FGameplayTag InputTag)
 {
+	if(InputTag.MatchesTagExact(FRLGameplayTags::Get().InputTag_LMB) || InputTag.MatchesTagExact(FRLGameplayTags::Get().InputTag_RMB))
+	{
+		OnMouseClickEvent.Broadcast();
+	}
+	if(InputTag.MatchesTagExact(FRLGameplayTags::Get().InputTag_Interact))
+	{
+		OnInteractEvent.Broadcast();
+	}
+	if(InputTag.MatchesTagExact(FRLGameplayTags::Get().InputTag_PickUp))
+	{
+		OnPickUpEvent.Broadcast();
+	}
+	
 	if(InputTag.MatchesTagExact(FRLGameplayTags::Get().InputTag_RMB))
 	{
 		APawn* ControllerPawn = GetPawn();
@@ -188,11 +245,6 @@ void ARLPlayerController::AbilityInputTagReleased(FGameplayTag InputTag)
 		}
 		FollowTime = 0.f;
 		return;
-	}
-
-	if(InputTag.MatchesTagExact(FRLGameplayTags::Get().InputTag_LMB) || InputTag.MatchesTagExact(FRLGameplayTags::Get().InputTag_RMB))
-	{
-		OnMouseClickEvent.Broadcast();
 	}
 	
 	GetASC()->AbilityInputTagReleased(InputTag);

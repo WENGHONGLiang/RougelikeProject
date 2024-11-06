@@ -54,8 +54,9 @@ void UAttributeSetBase::PostGameplayEffectExecute(const FGameplayEffectModCallba
 	{
 		const float LocalIncomingDamage = GetIncomingDamage();
 		SetIncomingDamage(0.f);
-
-		if(LocalIncomingDamage > 0.f)
+		
+		bool bRolling = GetOwningAbilitySystemComponent()->GetOwnedGameplayTags().HasTag(FRLGameplayTags::Get().HeroAbility_Roll);
+		if(LocalIncomingDamage > 0.f && !bRolling)
 		{
 			const float NewHealth = GetHealth() - LocalIncomingDamage;
 			SetHealth(FMath::Clamp(NewHealth, 0.f, GetMaxHealth()));

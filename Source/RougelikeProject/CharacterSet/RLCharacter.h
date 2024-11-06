@@ -25,4 +25,9 @@ protected:
 	virtual void GameplayEffectApplied(const FGameplayTagContainer& TagContainer) override;
 
 	URLAbilitySystemComponent* RLAbilitySystemComponent;
+
+	APlayerController* PlayerController;
+
+public:
+	APlayerController* GetPlayerController() { return PlayerController; };
 };

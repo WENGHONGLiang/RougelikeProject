@@ -24,7 +24,11 @@ public:
 	
 
 	// 添加一系列的能力 // 不激活
-	void AddCharacterAbilities(const TArray<TSubclassOf<UGameplayAbility>>& StartupAbilities);
+	void AddCharacterAbilities(const TArray<TSubclassOf<UGameplayAbility>>& StartupAbilities, bool bInit = true);
+	
+	void AddCharacterAbility(const TSubclassOf<UGameplayAbility>& AbilityClass, bool bInit = true);
+
+	void RemoveCharacterAblity(const FGameplayTag& AbilityTag);
 	
 	void UpdateCharacterAbilitiesInput(const FGameplayTag& AbilityTag, const FGameplayTag& NewInputTag);
 
@@ -35,8 +39,8 @@ public:
 	// 在 ActorInfo 被设置后调用一次 // 绑定GE被应用的回调
 	void BindGameplayEffectAppliedDelegate();
 
-	// 通过传入Tag直接启用技能 // 用于敌人
-	void ActivateAbilityDirectly(const FGameplayTag& InputTag);
+	// 通过传入Tag直接启用技能
+	bool ActivateAbilityDirectly(const FGameplayTag& InputTag);
 
 	UFUNCTION()
 	void OnEffectApplied(UAbilitySystemComponent* AbilitySystemComponent, const FGameplayEffectSpec& GameplayEffectSpec, FActiveGameplayEffectHandle ActiveGameplayEffectHandle);

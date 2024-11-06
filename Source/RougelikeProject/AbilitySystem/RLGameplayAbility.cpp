@@ -3,9 +3,12 @@
 
 #include "RLGameplayAbility.h"
 
+#include "RLGameplayTags.h"
+
 URLGameplayAbility::URLGameplayAbility()
 {
 	BaseDamage = 1.f;
+	StartupInputTag = FRLGameplayTags::Get().InputTag_Empty;
 }
 
 ARLCharacterBase* URLGameplayAbility::GetCharacterBase()

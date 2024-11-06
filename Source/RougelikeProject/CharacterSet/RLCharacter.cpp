@@ -25,6 +25,8 @@ void ARLCharacter::PossessedBy(AController* NewController)
 	
 	// 初始化 ASC
 	InitAbilityActorInfo();
+
+	PlayerController = Cast<APlayerController>(NewController);
 }
 
 void ARLCharacter::InitAbilityActorInfo()

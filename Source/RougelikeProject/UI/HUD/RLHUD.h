@@ -11,6 +11,7 @@
 #include "RougelikeProject/UI/WidgetController/LevelMapWidgetController.h"
 #include "RougelikeProject/UI/WidgetController/OverlayWidgetController.h"
 #include "RougelikeProject/UI/WidgetController/RLWidgetController.h"
+#include "RougelikeProject/UI/WidgetController/ShopWidgetController.h"
 #include "RLHUD.generated.h"
 
 class UAbilitySystemComponent;
@@ -35,17 +36,28 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void InitLevelMap(APlayerController* PC, UAbilitySystemComponent* ASC, UAttributeSet* AS, APlayerState* PS);
 	
+	// Controller 中调用 // 调用时只初始化Controller绑定事件 // Shop Actor初始化时更新实际商品
+	UFUNCTION(BlueprintCallable)
+	void InitShop(APlayerController* PC, UAbilitySystemComponent* ASC, UAttributeSet* AS, APlayerState* PS);
+	
 	// 初始化 或 得到 WC
 	UOverlayWidgetController* GetOverlayWidgetController(const FWidgetControllerParams WCParams);
 	UAttributeMenuWidgetController* GetAttributeMenuWidgetController(const FWidgetControllerParams WCParams);
 	ULevelMapWidgetController* GetLevelMapWidgetController(const FWidgetControllerParams WCParams);
 	UAbilityMenuWidgetController* GetAbilityMenuWidgetController(const FWidgetControllerParams WCParams);
+	UShopWidgetController* GetShopWidgetController(const FWidgetControllerParams WCParams);
 
 	UFUNCTION(BlueprintCallable)
 	void ShowLevelMap(bool bShow);
 	
 	UFUNCTION(BlueprintCallable)
 	void ShowBattleWidget(bool bShow);
+	
+	UFUNCTION(BlueprintCallable)
+	void ShowShopWidget(bool bShow);
+
+	UFUNCTION(BlueprintCallable)
+	void UpdateShopCommodity(bool bShow = false);
 
 	void UpdateLevel(int CurNodeIndex, int LastNodeIndex);
 	
@@ -107,5 +119,19 @@ private:
 	
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<ULevelMapWidgetController> LevelMapWidgetControllerClass;
+
+	
+	/* LevelMap：局外关卡选择界面 */
+	UPROPERTY()
+	TObjectPtr<URLUserWidget> ShopWidget;
+	
+	UPROPERTY()
+	TObjectPtr<UShopWidgetController> ShopWidgetController;
+	
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<URLUserWidget> ShopWidgetClass;
+	
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<UShopWidgetController> ShopWidgetControllerClass;
 	
 };

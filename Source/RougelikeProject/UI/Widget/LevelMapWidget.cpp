@@ -21,7 +21,8 @@ void ULevelMapWidget::UpdateNode(FNode node)
 	if(!NodeWidgetMap.Contains(node.NodeIndex))
 	{
 		ULevelNodeWidget* LevelNode = CreateWidget<ULevelNodeWidget>(this, LevelNodeWidgetClass);
-		LevelNode->SetRenderTranslation(node.position);
+		float Scale = UWidgetLayoutLibrary::GetViewportScale(this);
+		LevelNode->SetRenderTranslation(node.position / Scale);
 		
 		LevelNode->SetNode(node);
 		LevelNode->AddToViewport(1);
@@ -41,9 +42,9 @@ void ULevelMapWidget::AddLine(FLine line)
 	UWidget* Widget = Lines->GetChildAt(line.LineIndex);
 	USplineWidget* SplineWidget = Cast<USplineWidget>(Widget);
 	SplineWidget->SplineInfo.TintColor = FLinearColor::Gray; // 禁止通行
-
-	SplineWidget->SplineInfo.Points[0].Location = line.node_1->position;
-	SplineWidget->SplineInfo.Points[1].Location = line.node_2->position;
+	float Scale = UWidgetLayoutLibrary::GetViewportScale(this);
+	SplineWidget->SplineInfo.Points[0].Location = line.node_1->position / Scale;
+	SplineWidget->SplineInfo.Points[1].Location = line.node_2->position / Scale;
 	SplineWidget->SetVisibility(ESlateVisibility::HitTestInvisible);
 }
 

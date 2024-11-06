@@ -4,7 +4,9 @@
 #include "RLGameMode.h"
 
 #include "Kismet/GameplayStatics.h"
+#include "RougelikeProject/Actor/RLAbilityActor.h"
 #include "RougelikeProject/UI/HUD/RLHUD.h"
+#include "UniversalObjectLocators/UniversalObjectLocatorUtils.h"
 
 void ARLGameMode::BeginPlay()
 {
@@ -47,6 +49,7 @@ void ARLGameMode::EndLevel()
 	UnLoadCurrentLevel();
 }
 
+
 void ARLGameMode::LoadLevel(FName LevelName)
 {
 	FLatentActionInfo LatentActionInfo;
@@ -57,4 +60,18 @@ void ARLGameMode::UnLoadCurrentLevel()
 {
 	FLatentActionInfo LatentActionInfo;
 	UGameplayStatics::UnloadStreamLevel(GetWorld(), CurrentLevelName, LatentActionInfo, false);
+}
+
+void ARLGameMode::SpawnAbilityActorAtLocation(FGameplayTag AbilityTag, FVector Location)
+{
+	ARLAbilityActor* AbilityActor = Cast<ARLAbilityActor>(GetWorld()->SpawnActor(AbilityActorClass, &Location));
+	FRLAbilityInfo& Info = AbilityConfig->FindAbilityInfo(AbilityTag);
+
+	AbilityActor->InitAbilityActor(Info);
+}
+
+void ARLGameMode::SpawnAblityActorAroundPlayer(FGameplayTag AbilityTag)
+{
+	FVector PlayerLocation = UGameplayStatics::GetPlayerPawn(this, 0)->GetActorLocation();
+	SpawnAbilityActorAtLocation(AbilityTag, FVector(PlayerLocation.X + FMath::RandRange(-90, 90), PlayerLocation.Y + FMath::RandRange(-90, 90), 0));
 }

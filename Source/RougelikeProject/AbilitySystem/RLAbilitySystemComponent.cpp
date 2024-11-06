@@ -22,24 +22,34 @@ void URLAbilitySystemComponent::OnEffectApplied(UAbilitySystemComponent* Ability
 	OnGameplayEffectApplied.Broadcast(TagContainer);
 }
 
-void URLAbilitySystemComponent::AddCharacterAbilities(const TArray<TSubclassOf<UGameplayAbility>>& StartupAbilities)
+void URLAbilitySystemComponent::AddCharacterAbilities(const TArray<TSubclassOf<UGameplayAbility>>& StartupAbilities, bool bInit)
 {
 	for(auto AbilityClass : StartupAbilities)
 	{
-		FGameplayAbilitySpec AbilitySpec = FGameplayAbilitySpec(AbilityClass, 1);
-	
-		if(URLGameplayAbility* Ability = Cast<URLGameplayAbility>(AbilitySpec.Ability))
-		{
-			AbilitySpec.DynamicAbilityTags.AddTag(Ability->StartupInputTag);
-			// 只赋予，不激活
-			GiveAbility(AbilitySpec);
-			// 由AbilityMenuWidgetController接收使用
-			OnGameplayAbilityGive.Broadcast(Ability->StartupInputTag, Ability->AbilityTags.First(), Ability->BaseDamage);
-		}
+		AddCharacterAbility(AbilityClass, bInit);
 	}
 }
 
-void URLAbilitySystemComponent::UpdateCharacterAbilitiesInput(const FGameplayTag& AbilityTag, const FGameplayTag& NewInputTag)
+void URLAbilitySystemComponent::AddCharacterAbility(const TSubclassOf<UGameplayAbility>& AbilityClass, bool bInit)
+{
+	FGameplayAbilitySpec AbilitySpec = FGameplayAbilitySpec(AbilityClass, 1);
+	
+	if(URLGameplayAbility* Ability = Cast<URLGameplayAbility>(AbilitySpec.Ability))
+	{
+		if(bInit)
+		{
+			AbilitySpec.DynamicAbilityTags.AddTag(Ability->StartupInputTag);
+			
+			// 由AbilityMenuWidgetController接收使用
+			OnGameplayAbilityGive.Broadcast(Ability->StartupInputTag, Ability->AbilityTags.First(), Ability->BaseDamage);
+		}
+		
+		// 只赋予，不激活
+		GiveAbility(AbilitySpec);
+	}
+}
+
+void URLAbilitySystemComponent::RemoveCharacterAblity(const FGameplayTag& AbilityTag)
 {
 	if(AbilityTag == FRLGameplayTags::Get().HeroAbility_Empty)
 		return;
@@ -48,8 +58,24 @@ void URLAbilitySystemComponent::UpdateCharacterAbilitiesInput(const FGameplayTag
 	{
 		if(AbilitySpec.Ability->AbilityTags.First().MatchesTagExact(AbilityTag))
 		{
+			ClearAbility(AbilitySpec.Handle);
+			break;
+		}
+	}
+}
+
+void URLAbilitySystemComponent::UpdateCharacterAbilitiesInput(const FGameplayTag& AbilityTag, const FGameplayTag& NewInputTag)
+{
+	if(AbilityTag == FRLGameplayTags::Get().HeroAbility_Empty)
+		return;
+	
+	for(auto& AbilitySpec : GetActivatableAbilities())
+	{
+		if(AbilitySpec.Ability->AbilityTags.First().MatchesTagExact(AbilityTag))
+		{
 			AbilitySpec.DynamicAbilityTags.Reset();
-			AbilitySpec.DynamicAbilityTags.AddTag(NewInputTag);
+			if(!NewInputTag.MatchesTagExact(FRLGameplayTags::Get().InputTag_Empty))
+				AbilitySpec.DynamicAbilityTags.AddTag(NewInputTag);
 			break;
 		}
 	}
@@ -85,17 +111,22 @@ void URLAbilitySystemComponent::AbilityInputTagReleased(const FGameplayTag& Inpu
 	}
 }
 
-void URLAbilitySystemComponent::ActivateAbilityDirectly(const FGameplayTag& InputTag)
+bool URLAbilitySystemComponent::ActivateAbilityDirectly(const FGameplayTag& InputTag)
 {
-	if(!InputTag.IsValid()) return;
+	if(!InputTag.IsValid()) return false;
 	
 	for(auto& AbilitySpec :  GetActivatableAbilities())
 	{
 		if(AbilitySpec.DynamicAbilityTags.HasTagExact(InputTag))
 		{
-			TryActivateAbility(AbilitySpec.Handle);
+			if(!AbilitySpec.IsActive())
+			{
+				TryActivateAbility(AbilitySpec.Handle);
+				return true;
+			}
 		}
 	}
+	return false;
 }
 
 void URLAbilitySystemComponent::CheckAbilityCoolDown()

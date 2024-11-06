@@ -37,12 +37,17 @@ public:
 	
 	UPROPERTY(BlueprintAssignable, Category="GAS|Attributes")
 	FOnAttributeChangedSignature OnMaxHealthChanged;
+	
+	UPROPERTY(BlueprintAssignable, Category="GAS|Attributes")
+	FOnAttributeChangedSignature OnMoneyChanged;
 
 	UPROPERTY(EditDefaultsOnly)
 	TObjectPtr<UMessageConfig> MessageConfig;
 
+	void SetPropertyMessage(FText Message, UTexture2D* Image);
+	
 	// 由设置 Messge 方调用，如 PropertyActor // 通过 Tag 找到具体消息并传递出去
-	void SetMessage(FGameplayTag MessageTag);
+	void SetTipMessageByTag(FGameplayTag MessageTag);
 
 	void HideMessage(MessageHideMode mode);
 

@@ -4,8 +4,10 @@
 #include "RLEnemy.h"
 
 #include "AbilitySystemComponent.h"
+#include "Kismet/GameplayStatics.h"
 #include "RougelikeProject/AbilitySystem/RLAbilitySystemComponent.h"
 #include "RougelikeProject/ArributeBaseSet/AttributeSetBase.h"
+#include "RougelikeProject/Player/RLPlayerState.h"
 #include "RougelikeProject/UI/Widget/RLUserWidget.h"
 
 ARLEnemy::ARLEnemy()
@@ -66,7 +68,8 @@ void ARLEnemy::InitAbilityActorInfo()
 	// 初始属性
 	FCharacterClassDefaultInfo info = CharacterInfo->GetClassDefaultInfo(CharacterType);
 	ApplyEffectToSelf(info.Attributes, GetCharacterLevel());
-
+	RewardMoney = info.RewardMoney;
+	
 	// 添加初始技能
 	AddCharacterAbilities();
 
@@ -78,6 +81,13 @@ void ARLEnemy::GameplayEffectApplied(const FGameplayTagContainer& TagContainer)
 	Super::GameplayEffectApplied(TagContainer);
 
 	// TODO: 敌人受到角色特殊技能后的效果
+}
+
+void ARLEnemy::CharacterDie()
+{
+	Super::CharacterDie();
+
+	Cast<ARLPlayerState>(UGameplayStatics::GetPlayerState(this, 0))->AddMoney(RewardMoney);
 }
 
 void ARLEnemy::UseAbility(const FGameplayTag& InputTag)

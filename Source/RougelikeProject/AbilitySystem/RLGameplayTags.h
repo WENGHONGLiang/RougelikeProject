@@ -28,6 +28,8 @@ public:
 	FGameplayTag Attributes_CriticalDamageMultiple;
 
 	/* 输入键位 */
+	FGameplayTag InputTag_Empty;
+	
 	FGameplayTag InputTag_LMB;
 	FGameplayTag InputTag_RMB;
 	
@@ -35,6 +37,11 @@ public:
 	FGameplayTag InputTag_2;
 	FGameplayTag InputTag_3;
 	FGameplayTag InputTag_4;
+	
+	FGameplayTag InputTag_PickUp; // 交互键
+	FGameplayTag InputTag_Interact; // 交互键
+	
+	FGameplayTag InputTag_Roll; // 闪避键
 
 	/* 测试消息 */
 	FGameplayTag Message_Tip;
@@ -51,8 +58,9 @@ public:
 	FGameplayTag GE_Damage;
 	FGameplayTag GE_Damage_Normal;
 
-	/* 英雄技能, 这里只定义空技能用于控件初始化, 其它技能Tag直接在编辑器添加 */
+	/* 英雄技能, 大部分技能Tag直接在编辑器添加 */
 	FGameplayTag HeroAbility_Empty;
+	FGameplayTag HeroAbility_Roll;
 	
 private:
 	// instance

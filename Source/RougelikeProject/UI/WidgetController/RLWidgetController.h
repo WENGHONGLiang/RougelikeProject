@@ -51,7 +51,7 @@ public:
 	virtual void BindCallbacksToDependencies();
 	
 	UFUNCTION(BlueprintCallable)
-	void ShowWidget(bool bShow);
+	virtual void ShowWidget(bool bShow);
 
 	FVector2D GetCursorPosition() const;
 	

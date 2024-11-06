@@ -34,7 +34,9 @@ public:
 	
 	void OnAbilityButtonClicked(const FGameplayTag& InputTag, const FGameplayTag& AbilityTag);
 
-	void CancelDrag();
+	void DiscardAbility();
+
+	void AddAbility(const FGameplayTag& AbilityTag);
 
 	UFUNCTION()
 	void OnMouseClick();

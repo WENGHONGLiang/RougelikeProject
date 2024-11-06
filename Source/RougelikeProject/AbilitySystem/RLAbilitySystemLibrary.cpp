@@ -55,3 +55,26 @@ UAttributeMenuWidgetController* URLAbilitySystemLibrary::GetAttributeMenuWidgetC
 	
 	return nullptr;
 }
+
+UAbilityMenuWidgetController* URLAbilitySystemLibrary::GetAbilityMenuWidgetController(const UObject* WorldContextObject)
+{
+	APlayerController* PC = UGameplayStatics::GetPlayerController(WorldContextObject, 0);
+
+	if(PC)
+	{
+		if(ARLHUD* HUD = Cast<ARLHUD>(PC->GetHUD()))
+		{
+			ARLPlayerState* PS = PC->GetPlayerState<ARLPlayerState>();
+			UAbilitySystemComponent* ASC = PS->GetAbilitySystemComponent();
+			UAttributeSet* AS = PS->GetAttributeSet();
+
+			const FWidgetControllerParams WidgetControllerParams(PC, ASC, AS, PS);
+
+			UAbilityMenuWidgetController* WidgetController = HUD->GetAbilityMenuWidgetController(WidgetControllerParams);
+			
+			return WidgetController;
+		}
+	}
+	
+	return nullptr;
+}

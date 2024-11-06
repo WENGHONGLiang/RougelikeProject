@@ -22,7 +22,7 @@ APropertyActor::APropertyActor()
 	MeshComp->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	MeshComp->SetupAttachment(SphereComp);
 
-	TipTag = FRLGameplayTags::Get().Message_Tip_PickUp;
+	MessageTipTag = FRLGameplayTags::Get().Message_Tip_PickUp;
 }
 
 // Called when the game starts or when spawned
@@ -50,11 +50,19 @@ void APropertyActor::Tick(float DeltaTime)
 void APropertyActor::BeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
 	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	if(!Cast<ARLCharacter>(OtherActor))
+	ARLCharacter* Character = Cast<ARLCharacter>(OtherActor);
+	if(!Character)
 		return;
+
+	if(!PlayerController)
+	{
+		PlayerCharacter = Character;
+	    PlayerController = Cast<ARLPlayerController>(Character->GetPlayerController());
+		PlayerController->OnPickUpEvent.AddDynamic(this, &APropertyActor::OnPickUp);
+	}
 	
-	URLAbilitySystemLibrary::GetOverlayWidgetController(this)->SetMessage(MessageTag); // 具体装备
-	URLAbilitySystemLibrary::GetOverlayWidgetController(this)->SetMessage(TipTag); // 拾取提示
+	URLAbilitySystemLibrary::GetOverlayWidgetController(this)->SetTipMessageByTag(MessageTipTag); // 拾取提示
+	bBindPickEvent = true;
 }
 
 void APropertyActor::EndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
@@ -64,4 +72,16 @@ void APropertyActor::EndOverlap(UPrimitiveComponent* OverlappedComponent, AActor
 		return;
 	
 	URLAbilitySystemLibrary::GetOverlayWidgetController(this)->HideMessage(All);
+	bBindPickEvent = false;
+}
+
+void APropertyActor::OnPickUp()
+{
+	if(!bBindPickEvent)
+		return;
+}
+
+void APropertyActor::Destroyed()
+{
+	Super::Destroyed();
 }

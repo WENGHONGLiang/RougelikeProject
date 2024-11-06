@@ -7,13 +7,18 @@
 #include "Engine/DataAsset.h"
 #include "AbilityConfig.generated.h"
 
-USTRUCT(BlueprintType)
+class UGameplayAbility;
+
+USTRUCT(BlueprintType, Blueprintable)
 struct FRLAbilityInfo
 {
 	GENERATED_BODY()
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	FGameplayTag AbilityTag = FGameplayTag();
+	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	TSubclassOf<UGameplayAbility> AbilityClass;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	FText AbilityDescription = FText();

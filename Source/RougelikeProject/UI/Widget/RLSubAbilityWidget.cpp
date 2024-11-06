@@ -5,6 +5,11 @@
 
 #include "RougelikeProject/AbilitySystem/RLGameplayTags.h"
 
+URLSubAbilityWidget::URLSubAbilityWidget()
+{
+	AbilityInfo.AbilityTag = FRLGameplayTags::Get().HeroAbility_Empty;
+}
+
 void URLSubAbilityWidget::StoreAbilityInfo(FRLAbilityInfo info)
 {
 	AbilityInfo = info;
