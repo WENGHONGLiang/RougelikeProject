@@ -18,6 +18,7 @@ UAttributeSetBase::UAttributeSetBase()
 	TagsToAttributes.Add(GameplayTags.Attributes_Damage, GetDamageAttribute); 
 	TagsToAttributes.Add(GameplayTags.Attributes_Defense, GetDefenseAttribute); 
 	TagsToAttributes.Add(GameplayTags.Attributes_AttackSpeed, GetAttackSpeedAttribute); 
+	TagsToAttributes.Add(GameplayTags.Attributes_SkillSpeed, GetSkillSpeedAttribute); 
 	TagsToAttributes.Add(GameplayTags.Attributes_MoveSpeed, GetMoveSpeedAttribute); 
 	TagsToAttributes.Add(GameplayTags.Attributes_SkillIntensity, GetSkillIntensityAttribute); 
 	TagsToAttributes.Add(GameplayTags.Attributes_CriticalDamageRatio, GetCriticalDamageRatioAttribute); 

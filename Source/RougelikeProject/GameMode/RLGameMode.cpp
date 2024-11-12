@@ -26,10 +26,17 @@ void ARLGameMode::StartLevel(int NodeIndex, FName LevelName)
 	CurrentLevelNodeIndex = NodeIndex;
 	
 	LoadLevel(LevelName);
-
-	APawn* Pawn = UGameplayStatics::GetPlayerPawn(this, 0);
-	if(Pawn)
-		Pawn->Destroy();
+	if(!bInit)
+	{
+		DefaultPawnClass = PlayerCharacterClass;
+		bInit = true;
+	}
+	else
+	{
+		APawn* Pawn = UGameplayStatics::GetPlayerPawn(this, 0);
+		if(Pawn)
+			Pawn->Destroy();
+	}
 	
 	RestartPlayer(UGameplayStatics::GetPlayerController(this, 0));
 }
@@ -62,16 +69,24 @@ void ARLGameMode::UnLoadCurrentLevel()
 	UGameplayStatics::UnloadStreamLevel(GetWorld(), CurrentLevelName, LatentActionInfo, false);
 }
 
-void ARLGameMode::SpawnAbilityActorAtLocation(FGameplayTag AbilityTag, FVector Location)
+void ARLGameMode::SpawnAbilityActorAtLocation(FGameplayTag AbilityTag, FVector Location, float AbilityLevel)
 {
 	ARLAbilityActor* AbilityActor = Cast<ARLAbilityActor>(GetWorld()->SpawnActor(AbilityActorClass, &Location));
-	FRLAbilityInfo& Info = AbilityConfig->FindAbilityInfo(AbilityTag);
-
+	FRLAbilityInfo Info = AbilityConfig->FindAbilityInfo(AbilityTag);
+	Info.AbilityLevel = AbilityLevel;
+	
 	AbilityActor->InitAbilityActor(Info);
 }
 
-void ARLGameMode::SpawnAblityActorAroundPlayer(FGameplayTag AbilityTag)
+float ARLGameMode::GetAbilityBaseDamageWithAbilityTag(FGameplayTag AbilityTag)
+{
+	FRLAbilityInfo& Info = AbilityConfig->FindAbilityInfo(AbilityTag);
+	
+	return Info.AbilityBaseDamage;
+}
+
+void ARLGameMode::SpawnAblityActorAroundPlayer(FGameplayTag AbilityTag, float AbilityLevel)
 {
 	FVector PlayerLocation = UGameplayStatics::GetPlayerPawn(this, 0)->GetActorLocation();
-	SpawnAbilityActorAtLocation(AbilityTag, FVector(PlayerLocation.X + FMath::RandRange(-90, 90), PlayerLocation.Y + FMath::RandRange(-90, 90), 0));
+	SpawnAbilityActorAtLocation(AbilityTag, FVector(PlayerLocation.X + FMath::RandRange(-90, 90), PlayerLocation.Y + FMath::RandRange(-90, 90), 0), AbilityLevel);
 }

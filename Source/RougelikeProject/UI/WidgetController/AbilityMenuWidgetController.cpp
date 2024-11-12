@@ -11,6 +11,8 @@
 #include "RougelikeProject/AbilitySystem/RLGameplayTags.h"
 #include "RougelikeProject/GameMode/RLGameMode.h"
 #include "RougelikeProject/Player/RLPlayerController.h"
+#include "RougelikeProject/Player/RLPlayerState.h"
+#include "UObject/FastReferenceCollector.h"
 
 UAbilityMenuWidgetController::UAbilityMenuWidgetController()
 {
@@ -22,14 +24,24 @@ UAbilityMenuWidgetController::UAbilityMenuWidgetController()
 void UAbilityMenuWidgetController::BindCallbacksToDependencies()
 {
 	URLAbilitySystemComponent* RLASC = Cast<URLAbilitySystemComponent>(AbilitySystemComponent);
+	ARLPlayerState* RLPS = Cast<ARLPlayerState>(PlayerState);
 
 	// 新技能添加事件
 	RLASC->OnGameplayAbilityGive.AddLambda(
-		[this](const FGameplayTag InputTag, const FGameplayTag AbilityTag, float AbilityBaseDamage)
+		[this](const FGameplayTag InputTag, const FGameplayTag AbilityTag, float AbilityLevel)
 		{
 			// 用 技能标签 找到技能信息，再跟 键位标签 一起传给 Widget 使用
-			FRLAbilityInfo& AbilityInfo = AbilityConfig->FindAbilityInfo(AbilityTag);
-			AbilityInfo.AbilityBaseDamage = AbilityBaseDamage;
+			FRLAbilityInfo AbilityInfo = AbilityConfig->FindAbilityInfo(AbilityTag);
+			AbilityInfo.AbilityLevel = AbilityLevel;
+			OnUpdateAbility.Broadcast(InputTag, AbilityInfo);
+		});
+
+	RLASC->OnAbilityLevelUpdate.AddLambda(
+		[this](const FGameplayTag InputTag, const FGameplayTag AbilityTag, float AbilityLevel)
+		{
+			// 用 技能标签 找到技能信息，再跟 键位标签 一起传给 Widget 使用
+			FRLAbilityInfo AbilityInfo = AbilityConfig->FindAbilityInfo(AbilityTag);
+			AbilityInfo.AbilityLevel = AbilityLevel;
 			OnUpdateAbility.Broadcast(InputTag, AbilityInfo);
 		});
 
@@ -40,6 +52,31 @@ void UAbilityMenuWidgetController::BindCallbacksToDependencies()
 			OnUpdateCoolDown.Broadcast(InputTag, Percent);
 		});
 
+	
+	RLPS->OnMoneyChanged.AddLambda(
+		[this](int32 NewMoney)
+		{
+			if(!bUpgradeMode) return;
+			
+			ARLCharacter* RLCharacter = Cast<ARLCharacter>(AbilitySystemComponent->GetAvatarActor());
+			for(auto& AbilitySpec : AbilitySystemComponent->GetActivatableAbilities())
+			{
+				FRLAbilityInfo AbilityInfo = AbilityConfig->FindAbilityInfo(AbilitySpec.Ability->AbilityTags.First());
+				AbilityInfo.AbilityLevel = AbilitySpec.Level;
+				int NeedMoney = RLCharacter->AbilityLevelCost.GetValueAtLevel(AbilitySpec.Level);
+				
+				if(AbilitySpec.Level <= 4 && NewMoney >= NeedMoney)
+				{
+					OnUpdateAbilityUpgradeInfo.Broadcast(AbilitySpec.DynamicAbilityTags.First(), NeedMoney,true);
+				}
+				else
+				{
+					OnUpdateAbilityUpgradeInfo.Broadcast(AbilitySpec.DynamicAbilityTags.First(), NeedMoney, false);
+				}
+			}
+		});
+	
+	
 	// 鼠标点击 // 暂时用于技能面板的操作
 	Cast<ARLPlayerController>(PlayerController)->OnMouseClickEvent.AddDynamic(this, &UAbilityMenuWidgetController::OnMouseClick);
 	
@@ -60,8 +97,8 @@ void UAbilityMenuWidgetController::BroadcastInitialValues()
 	for(auto& AbilitySpec : AbilitySystemComponent->GetActivatableAbilities())
 	{
 		URLGameplayAbility* RLAbility = Cast<URLGameplayAbility>(AbilitySpec.Ability);
-		FRLAbilityInfo& AbilityInfo = AbilityConfig->FindAbilityInfo(RLAbility->AbilityTags.First());
-		AbilityInfo.AbilityBaseDamage = RLAbility->BaseDamage;
+		FRLAbilityInfo AbilityInfo = AbilityConfig->FindAbilityInfo(RLAbility->AbilityTags.First());
+		AbilityInfo.AbilityLevel = AbilitySpec.Level;
 		OnUpdateAbility.Broadcast(AbilitySpec.DynamicAbilityTags.First(), AbilityInfo);
 	}
 }
@@ -109,6 +146,8 @@ void UAbilityMenuWidgetController::OnAbilityButtonClicked(const FGameplayTag& In
 	}
 	else if(bDraggingAbility && SourceInputTag.MatchesTagExact(FRLGameplayTags::Get().InputTag_Empty)) // 选中目标技能 // 手上的技能未绑定
 	{
+		URLAbilitySystemComponent* RlAbilitySystemComponent = Cast<URLAbilitySystemComponent>(AbilitySystemComponent);
+		
 		FRLAbilityInfo& SourceAbilityInfo = AbilityConfig->FindAbilityInfo(SourceAbilityTag);
 		FRLAbilityInfo& TargetAbilityInfo = AbilityConfig->FindAbilityInfo(AbilityTag);
 		FGameplayTag CurrentAbilityTag = SourceAbilityTag;
@@ -128,50 +167,102 @@ void UAbilityMenuWidgetController::OnAbilityButtonClicked(const FGameplayTag& In
 		// 把当前输入键位交给手上技能
 		OnUpdateAbility.Broadcast(InputTag, SourceAbilityInfo);
 		
-		URLAbilitySystemComponent* RlAbilitySystemComponent = Cast<URLAbilitySystemComponent>(AbilitySystemComponent);
 		RlAbilitySystemComponent->UpdateCharacterAbilitiesInput(CurrentAbilityTag, InputTag);
 		RlAbilitySystemComponent->UpdateCharacterAbilitiesInput(TargetAbilityInfo.AbilityTag, SourceInputTag);
 	}
 }
 
-void UAbilityMenuWidgetController::AddAbility(const FGameplayTag& AbilityTag)
+bool UAbilityMenuWidgetController::AddAbility(const FGameplayTag& AbilityTag, float AbilityLevel)
 {
 	if(bDraggingAbility)
 	{
-		DiscardAbility();
+		return false;
+	}
+
+	URLAbilitySystemComponent* RlAbilitySystemComponent = Cast<URLAbilitySystemComponent>(AbilitySystemComponent);
+	// 技能槽已经有的技能，直接不让绑定
+	if(RlAbilitySystemComponent->HasAbility(AbilityTag))
+	{
+		return false;
 	}
 	
 	FRLAbilityInfo& AbilityInfo = AbilityConfig->FindAbilityInfo(AbilityTag);
+	AbilityInfo.AbilityLevel = AbilityLevel;
 	OnStartDrag.Broadcast(AbilityInfo.AbilityImage);
 	SourceInputTag = FRLGameplayTags::Get().InputTag_Empty;
 	SourceAbilityTag = AbilityTag;
 	bDraggingAbility = true;
+	
+	// 防止捡起立马丢掉
+	bJustPickUp = true;
+	PickUpTimerHandle.Invalidate();
+	FTimerDelegate Delegate = FTimerDelegate::CreateLambda( [this](){ bJustPickUp = false; });
+	GetWorld()->GetTimerManager().SetTimer(PickUpTimerHandle, Delegate, 0.1f, false);
+	
+	return true;
+}
+
+void UAbilityMenuWidgetController::AddAbilityLevel(const FGameplayTag& AbilityTag)
+{
+	URLAbilitySystemComponent* RlAbilitySystemComponent = Cast<URLAbilitySystemComponent>(AbilitySystemComponent);
+	RlAbilitySystemComponent->AddAbilityLevel(AbilityTag);
 }
 
 void UAbilityMenuWidgetController::OnMouseClick()
 {
 	if(bDraggingAbility)
 	{
+		DelayReleaseDragTimerHandle.Invalidate();
 		FTimerDelegate Delegate = FTimerDelegate::CreateUObject(this, &UAbilityMenuWidgetController::DiscardAbility);
 		GetWorld()->GetTimerManager().SetTimer(DelayReleaseDragTimerHandle, Delegate, 0.025f, false);
 	}
 }
 
+void UAbilityMenuWidgetController::ShowAbilityUpgradePanel(bool bShow)
+{
+	OnShowAbilityUpgradePanel.Broadcast(bShow);
+	bUpgradeMode = bShow;
+
+	if(bShow)
+	{
+		ARLCharacter* RLCharacter = Cast<ARLCharacter>(AbilitySystemComponent->GetAvatarActor());
+		ARLPlayerState* RLPS = Cast<ARLPlayerState>(PlayerState);
+		const int CurMoney = RLPS->GetMoney();
+		for(auto& AbilitySpec : AbilitySystemComponent->GetActivatableAbilities())
+		{
+			FRLAbilityInfo AbilityInfo = AbilityConfig->FindAbilityInfo(AbilitySpec.Ability->AbilityTags.First());
+			AbilityInfo.AbilityLevel = AbilitySpec.Level;
+			const int NeedMoney = RLCharacter->AbilityLevelCost.GetValueAtLevel(AbilitySpec.Level);
+				
+			if(AbilitySpec.Level <= 4 && CurMoney >= NeedMoney)
+			{
+				OnUpdateAbilityUpgradeInfo.Broadcast(AbilitySpec.DynamicAbilityTags.First(), NeedMoney,true);
+			}
+			else
+			{
+				OnUpdateAbilityUpgradeInfo.Broadcast(AbilitySpec.DynamicAbilityTags.First(), NeedMoney, false);
+			}
+		}
+	}
+}
+
 void UAbilityMenuWidgetController::DiscardAbility()
 {
+	if(bJustPickUp)
+		return;
+	
 	FRLAbilityInfo& EmptyAbilityInfo = AbilityConfig->FindAbilityInfo(FRLGameplayTags::Get().HeroAbility_Empty);
 	OnStopDrag.Broadcast(EmptyAbilityInfo.AbilityImage);
 	
-	//FRLAbilityInfo& SourceAbilityInfo = AbilityConfig->FindAbilityInfo(SourceAbilityTag);
-	//OnUpdateAbility.Broadcast(SourceInputTag, SourceAbilityInfo);
-	
 	URLAbilitySystemComponent* RlAbilitySystemComponent = Cast<URLAbilitySystemComponent>(AbilitySystemComponent);
+	float SourceAbilityLevel = RlAbilitySystemComponent->GetAbilityLevel(SourceAbilityTag);
+	
 	RlAbilitySystemComponent->RemoveCharacterAblity(SourceAbilityTag);
 	
 	OnUpdateCoolDown.Broadcast(SourceInputTag, 0);
 	
 	// Spawn Ability Actor
-	Cast<ARLGameMode>(UGameplayStatics::GetGameMode(this))->SpawnAblityActorAroundPlayer(SourceAbilityTag);
+	Cast<ARLGameMode>(UGameplayStatics::GetGameMode(this))->SpawnAblityActorAroundPlayer(SourceAbilityTag, SourceAbilityLevel);
 	
 	SourceAbilityTag = FRLGameplayTags::Get().HeroAbility_Empty;
 	SourceInputTag = FRLGameplayTags::Get().InputTag_Empty;

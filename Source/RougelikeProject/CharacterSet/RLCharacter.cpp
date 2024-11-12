@@ -61,16 +61,16 @@ void ARLCharacter::InitAbilityActorInfo()
 	else // 后续只需要绑定新的Pawn
 	{
 		AbilitySystemComponent->SetAvatarActor(this);
-
-		if(ARLHUD* HUD = Cast<ARLHUD>(RLPlayerController->GetHUD()))
-		{
-			HUD->InitOverlay(RLPlayerController, AbilitySystemComponent, AttributeSet, RLPlayerState);
-		}
+	}
 	
-		if(ARLHUD* HUD = Cast<ARLHUD>(RLPlayerController->GetHUD()))
-		{
-			HUD->InitAbilityMenu(RLPlayerController, AbilitySystemComponent, AttributeSet, RLPlayerState);
-		}
+	if(ARLHUD* HUD = Cast<ARLHUD>(RLPlayerController->GetHUD()))
+	{
+		HUD->InitOverlay(RLPlayerController, AbilitySystemComponent, AttributeSet, RLPlayerState);
+	}
+	
+	if(ARLHUD* HUD = Cast<ARLHUD>(RLPlayerController->GetHUD()))
+	{
+		HUD->InitAbilityMenu(RLPlayerController, AbilitySystemComponent, AttributeSet, RLPlayerState);
 	}
 	
 	RLAbilitySystemComponent->OnGameplayEffectApplied.AddUObject(this, &ARLCharacter::GameplayEffectApplied);

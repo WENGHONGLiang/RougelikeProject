@@ -22,6 +22,7 @@ public:
 	FGameplayTag Attributes_Damage;
 	FGameplayTag Attributes_SkillIntensity;
 	FGameplayTag Attributes_AttackSpeed;
+	FGameplayTag Attributes_SkillSpeed;
 	FGameplayTag Attributes_Defense;
 	FGameplayTag Attributes_MoveSpeed;
 	FGameplayTag Attributes_CriticalDamageRatio;

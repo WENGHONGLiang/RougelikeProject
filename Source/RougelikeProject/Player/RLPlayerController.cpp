@@ -22,7 +22,8 @@ void ARLPlayerController::BeginPlay()
 	Super::BeginPlay();
 	
 	if(!ensureAlways(IM_Context)) return;
-
+	bEnableClickEvents = true;
+	
 	UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(GetLocalPlayer());
 	if(Subsystem)
 		Subsystem->AddMappingContext(IM_Context, 0);

@@ -29,10 +29,11 @@ public:
 	void EndLevel();
 
 	/* --- 技能 --- */
-	void SpawnAblityActorAroundPlayer(FGameplayTag AbilityTag);
+	void SpawnAblityActorAroundPlayer(FGameplayTag AbilityTag, float AbilityLevel = 1);
 	
-	void SpawnAbilityActorAtLocation(FGameplayTag AbilityTag, FVector3d Location);
-	
+	void SpawnAbilityActorAtLocation(FGameplayTag AbilityTag, FVector3d Location, float AbilityLevel);
+
+	float GetAbilityBaseDamageWithAbilityTag(FGameplayTag AbilityTag);
 private:
 	
 	ARLHUD* RLHUD;
@@ -52,4 +53,8 @@ private:
 	
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<APropertyActor> AbilityActorClass;
+
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<ARLCharacter> PlayerCharacterClass;
+	bool bInit = false;
 };

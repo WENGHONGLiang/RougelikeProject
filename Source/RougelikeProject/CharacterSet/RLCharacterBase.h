@@ -25,6 +25,10 @@ public:
 	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
 	UAttributeSet* GetAttributeSet() const { return AttributeSet; }	
 	int32 GetCharacterLevel() const { return CharacterLevel; }
+	
+	// 对自身使用 GE
+	UFUNCTION(BlueprintCallable)
+	void ApplyEffectToSelf(TSubclassOf<UGameplayEffect> GameplayEffectClass, int32 Level);
 
 protected:
 	UPROPERTY()
@@ -35,11 +39,7 @@ protected:
 	
 	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category="Base Attributes")
 	TSubclassOf<UGameplayEffect> DefaultAttributes;
-
-	// 对自身使用 GE，暂时用于初始化属性
-	UFUNCTION(BlueprintCallable)
-	void ApplyEffectToSelf(TSubclassOf<UGameplayEffect> GameplayEffectClass, int32 Level);
-
+	
 	virtual void InitAbilityActorInfo();
 
 	virtual void BeginPlay() override;

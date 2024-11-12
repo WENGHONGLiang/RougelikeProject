@@ -52,7 +52,7 @@ void UShopWidgetController::BuyCommodity(int CommodityID)
 	if(CommodityInfo.Type == Ability)
 	{
 		ARLGameMode* GameMode = Cast<ARLGameMode>(UGameplayStatics::GetGameMode(this));
-		GameMode->SpawnAblityActorAroundPlayer(CommodityInfo.Tag);
+		GameMode->SpawnAblityActorAroundPlayer(CommodityInfo.Tag, CommodityInfo.Level);
 	}
 	CommodityInfo.Number--;
 	OnUpdateCommodity.Broadcast(CommodityID, CommodityInfo);

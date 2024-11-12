@@ -31,6 +31,7 @@ void APropertyActor::BeginPlay()
 	Super::BeginPlay();
 	SphereComp->OnComponentBeginOverlap.AddDynamic(this, &APropertyActor::BeginOverlap);
 	SphereComp->OnComponentEndOverlap.AddDynamic(this, &APropertyActor::EndOverlap);
+
 }
 
 void APropertyActor::EndPlay(const EEndPlayReason::Type EndPlayReason)
@@ -58,7 +59,7 @@ void APropertyActor::BeginOverlap(UPrimitiveComponent* OverlappedComponent, AAct
 	{
 		PlayerCharacter = Character;
 	    PlayerController = Cast<ARLPlayerController>(Character->GetPlayerController());
-		PlayerController->OnPickUpEvent.AddDynamic(this, &APropertyActor::OnPickUp);
+		PlayerController->OnPickUpEvent.AddDynamic(this, &APropertyActor::OnButtonPickUp);
 	}
 	
 	URLAbilitySystemLibrary::GetOverlayWidgetController(this)->SetTipMessageByTag(MessageTipTag); // 拾取提示
@@ -75,9 +76,20 @@ void APropertyActor::EndOverlap(UPrimitiveComponent* OverlappedComponent, AActor
 	bBindPickEvent = false;
 }
 
-void APropertyActor::OnPickUp()
+void APropertyActor::NotifyActorOnReleased(FKey ButtonPressed)
 {
-	if(!bBindPickEvent)
+	Super::NotifyActorOnReleased(ButtonPressed);
+	OnPickUp(true);
+}
+
+void APropertyActor::OnButtonPickUp()
+{
+	OnPickUp(false);
+}
+
+void APropertyActor::OnPickUp(bool bClick)
+{
+	if(!bBindPickEvent && !bClick)
 		return;
 }
 

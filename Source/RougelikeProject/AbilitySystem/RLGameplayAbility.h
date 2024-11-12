@@ -17,6 +17,8 @@ class ROUGELIKEPROJECT_API URLGameplayAbility : public UGameplayAbility
 	
 public:
 	URLGameplayAbility();
+
+	void InitAbilityBaseDamage(float Amount);
 	
 	UPROPERTY(EditDefaultsOnly, Category="Input")
 	FGameplayTag StartupInputTag;
@@ -24,7 +26,8 @@ public:
 	// 基础伤害
 	// 普通实际伤害 = 基础伤害 * 攻击方攻击力 - 被攻击方护甲值
 	// 技能实际伤害 = 基础伤害 * 攻击方技能强度 - 被攻击方护甲值
-	UPROPERTY(EditDefaultsOnly)
+	// 在 AbilityConfig 配置
+	UPROPERTY(BlueprintReadOnly)
 	float BaseDamage;
 
 	UFUNCTION(BlueprintPure)

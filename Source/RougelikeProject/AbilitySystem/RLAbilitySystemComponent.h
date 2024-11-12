@@ -20,17 +20,25 @@ public:
 
 	FAbilityEvent OnGameplayAbilityGive;
 	
+	FAbilityEvent OnAbilityLevelUpdate;
+	
 	FCoolDownUpdateDelegate OnCoolDownTimeUpdate;
 	
 
 	// 添加一系列的能力 // 不激活
 	void AddCharacterAbilities(const TArray<TSubclassOf<UGameplayAbility>>& StartupAbilities, bool bInit = true);
 	
-	void AddCharacterAbility(const TSubclassOf<UGameplayAbility>& AbilityClass, bool bInit = true);
+	void AddCharacterAbility(const TSubclassOf<UGameplayAbility>& AbilityClass, float AbilityLevel = 1, bool bInit = true);
+
+	void AddAbilityLevel(const FGameplayTag& AbilityTag);
 
 	void RemoveCharacterAblity(const FGameplayTag& AbilityTag);
 	
 	void UpdateCharacterAbilitiesInput(const FGameplayTag& AbilityTag, const FGameplayTag& NewInputTag);
+
+	float GetAbilityLevel(const FGameplayTag AbilityTag);
+
+	bool HasAbility(const FGameplayTag AbilityTag);
 
 	// 通过输入绑定启用技能 // 用于玩家
 	void AbilityInputTagReleased(const FGameplayTag& InputTag);

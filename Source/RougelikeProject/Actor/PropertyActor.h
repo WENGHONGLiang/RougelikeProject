@@ -50,9 +50,14 @@ protected:
 	
 	UFUNCTION()
 	virtual void EndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
+	
+	void NotifyActorOnReleased(FKey ButtonPressed = EKeys::LeftMouseButton) override;
 
 	UFUNCTION()
-	virtual void OnPickUp();
+	virtual void OnButtonPickUp(); 
+	
+	UFUNCTION()
+	virtual void OnPickUp(bool bClick = false);
 
 	UFUNCTION()
 	void Destroyed() override;

@@ -28,4 +28,7 @@ public:
 	// 蓝图中收到更新事件时，存储更新的技能Info
 	UFUNCTION(BlueprintCallable)
 	void StoreAbilityInfo(FRLAbilityInfo info);
+
+	UFUNCTION(BlueprintCallable)
+	void AddAblityLevel();
 };

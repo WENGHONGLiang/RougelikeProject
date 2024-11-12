@@ -5,6 +5,9 @@
 
 #include "RLGameplayAbility.h"
 #include "RLGameplayTags.h"
+#include "Kismet/GameplayStatics.h"
+#include "RougelikeProject/GameMode/RLGameMode.h"
+#include "RougelikeProject/Player/RLPlayerState.h"
 
 void URLAbilitySystemComponent::BindGameplayEffectAppliedDelegate()
 {
@@ -26,26 +29,51 @@ void URLAbilitySystemComponent::AddCharacterAbilities(const TArray<TSubclassOf<U
 {
 	for(auto AbilityClass : StartupAbilities)
 	{
-		AddCharacterAbility(AbilityClass, bInit);
+		AddCharacterAbility(AbilityClass, 1, bInit);
 	}
 }
 
-void URLAbilitySystemComponent::AddCharacterAbility(const TSubclassOf<UGameplayAbility>& AbilityClass, bool bInit)
+void URLAbilitySystemComponent::AddCharacterAbility(const TSubclassOf<UGameplayAbility>& AbilityClass, float AbilityLevel, bool bInit)
 {
-	FGameplayAbilitySpec AbilitySpec = FGameplayAbilitySpec(AbilityClass, 1);
+	FGameplayAbilitySpec AbilitySpec = FGameplayAbilitySpec(AbilityClass, AbilityLevel);
 	
 	if(URLGameplayAbility* Ability = Cast<URLGameplayAbility>(AbilitySpec.Ability))
 	{
+		ARLGameMode* GameMode = Cast<ARLGameMode>(UGameplayStatics::GetGameMode(this));
+		const float BaseDamage = GameMode->GetAbilityBaseDamageWithAbilityTag(Ability->AbilityTags.First());
+		Ability->InitAbilityBaseDamage(BaseDamage);
 		if(bInit)
 		{
 			AbilitySpec.DynamicAbilityTags.AddTag(Ability->StartupInputTag);
 			
 			// 由AbilityMenuWidgetController接收使用
-			OnGameplayAbilityGive.Broadcast(Ability->StartupInputTag, Ability->AbilityTags.First(), Ability->BaseDamage);
+			OnGameplayAbilityGive.Broadcast(Ability->StartupInputTag, Ability->AbilityTags.First(), AbilityLevel);
 		}
 		
 		// 只赋予，不激活
 		GiveAbility(AbilitySpec);
+	}
+}
+
+void URLAbilitySystemComponent::AddAbilityLevel(const FGameplayTag& AbilityTag)
+{
+	if(AbilityTag == FRLGameplayTags::Get().HeroAbility_Empty)
+		return;
+
+	for(auto& AbilitySpec : GetActivatableAbilities())
+	{
+		if(AbilitySpec.Ability->AbilityTags.First().MatchesTagExact(AbilityTag))
+		{
+			ARLPlayerState* RLPS = Cast<ARLPlayerState>(GetOwnerActor());
+			ARLCharacter* RLCharacter = Cast<ARLCharacter>(GetAvatarActor());
+			
+			if(AbilitySpec.Level <= 4 && RLPS->CostMoney(RLCharacter->AbilityLevelCost.GetValueAtLevel(AbilitySpec.Level)))
+			{
+				AbilitySpec.Level += 1;
+				OnAbilityLevelUpdate.Broadcast(AbilitySpec.DynamicAbilityTags.First(), AbilitySpec.Ability->AbilityTags.First(), AbilitySpec.Level);
+			}
+			break;
+		}
 	}
 }
 
@@ -79,6 +107,36 @@ void URLAbilitySystemComponent::UpdateCharacterAbilitiesInput(const FGameplayTag
 			break;
 		}
 	}
+}
+
+float URLAbilitySystemComponent::GetAbilityLevel(const FGameplayTag AbilityTag)
+{
+	if(AbilityTag == FRLGameplayTags::Get().HeroAbility_Empty)
+		return 0;
+	
+	for(auto& AbilitySpec : GetActivatableAbilities())
+	{
+		if(AbilitySpec.Ability->AbilityTags.First().MatchesTagExact(AbilityTag))
+		{
+			return AbilitySpec.Level;
+		}
+	}
+	return 0;
+}
+
+bool URLAbilitySystemComponent::HasAbility(const FGameplayTag AbilityTag)
+{
+	if(AbilityTag == FRLGameplayTags::Get().HeroAbility_Empty)
+		return false;
+	
+	for(auto& AbilitySpec : GetActivatableAbilities())
+	{
+		if(AbilitySpec.Ability->AbilityTags.First().MatchesTagExact(AbilityTag))
+		{
+			return true;
+		}
+	}
+	return false;
 }
 
 void URLAbilitySystemComponent::AbilityInputTagHeld(const FGameplayTag& InputTag)
@@ -136,11 +194,12 @@ void URLAbilitySystemComponent::CheckAbilityCoolDown()
 		UGameplayAbility* Ability = AbilitySpec.GetPrimaryInstance();
 		if(Ability)
 		{
+			UGameplayEffect* GE = Ability->GetCooldownGameplayEffect();
 			float CooldownRemain;
 			float CooldownDuration;
 			FGameplayAbilityActorInfo ActorInfo = Ability->GetActorInfo();
 			Ability->GetCooldownTimeRemainingAndDuration(AbilitySpec.Handle, &ActorInfo, CooldownRemain, CooldownDuration);
-
+			
 			if(CooldownRemain > 0.001f)
 			{
 				float Percent = CooldownRemain / CooldownDuration;

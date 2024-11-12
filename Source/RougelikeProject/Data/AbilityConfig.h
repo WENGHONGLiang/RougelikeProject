@@ -26,8 +26,11 @@ struct FRLAbilityInfo
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	UTexture2D* AbilityImage = nullptr;
 
-	UPROPERTY(BlueprintReadOnly)
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	float AbilityBaseDamage;
+	
+	UPROPERTY(BlueprintReadOnly)
+	float AbilityLevel;
 };
 
 UCLASS()

@@ -24,10 +24,16 @@ protected:
 	
 	virtual void GameplayEffectApplied(const FGameplayTagContainer& TagContainer) override;
 
+	UPROPERTY()
 	URLAbilitySystemComponent* RLAbilitySystemComponent;
 
+	UPROPERTY()
 	APlayerController* PlayerController;
+
 
 public:
 	APlayerController* GetPlayerController() { return PlayerController; };
+
+	UPROPERTY(EditDefaultsOnly)
+	FScalableFloat AbilityLevelCost;
 };

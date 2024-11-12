@@ -4,11 +4,17 @@
 #include "RLGameplayAbility.h"
 
 #include "RLGameplayTags.h"
+#include "Kismet/GameplayStatics.h"
+#include "RougelikeProject/GameMode/RLGameMode.h"
 
 URLGameplayAbility::URLGameplayAbility()
 {
-	BaseDamage = 1.f;
 	StartupInputTag = FRLGameplayTags::Get().InputTag_Empty;
+}
+
+void URLGameplayAbility::InitAbilityBaseDamage(float Amount)
+{
+	BaseDamage = Amount;
 }
 
 ARLCharacterBase* URLGameplayAbility::GetCharacterBase()

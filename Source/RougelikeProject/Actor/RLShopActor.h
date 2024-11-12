@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameplayTagContainer.h"
+#include "RLInteractableActor.h"
 #include "Components/BoxComponent.h"
 #include "GameFramework/Actor.h"
 #include "RougelikeProject/UI/HUD/RLHUD.h"
@@ -13,46 +14,22 @@ class ARLCharacter;
 class ARLPlayerController;
 
 UCLASS()
-class ROUGELIKEPROJECT_API ARLShopActor : public AActor
+class ROUGELIKEPROJECT_API ARLShopActor : public ARLInteractableActor
 {
 	GENERATED_BODY()
 	
 public:	
-	ARLShopActor();
-
+	virtual void BeginPlay() override;
+	
 protected:
 	UPROPERTY()
 	ARLHUD* HUD;
-	
-	UPROPERTY()
-	ARLCharacter* PlayerCharacter;
-	
-	UPROPERTY()
-	ARLPlayerController* PlayerController;
-	
-	UPROPERTY(EditDefaultsOnly)
-	FGameplayTag MessageTipTag_Open;
-	
-	UPROPERTY(EditDefaultsOnly)
-	FGameplayTag MessageTipTag_Close;
-	
-	virtual void BeginPlay() override;
 
-	UPROPERTY(EditDefaultsOnly)
-	UBoxComponent* BoxComp;
+	virtual void BeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult) override;
 
-	UPROPERTY(EditDefaultsOnly)
-	UStaticMeshComponent* StaticMeshComp;
-	
-	UFUNCTION()
-	void BeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
-	
-	UFUNCTION()
-	void EndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
-	
-	UFUNCTION()
-	void OnInteract();
+	virtual void EndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex) override;
 
+	virtual void OnInteract() override;
+	
 	bool bShowShopWidget = false;
-	bool bBindInteractEvent = false;
 };

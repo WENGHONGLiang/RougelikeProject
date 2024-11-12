@@ -18,14 +18,14 @@ class ROUGELIKEPROJECT_API ARLAbilityActor : public APropertyActor
 	ARLAbilityActor();
 	
 protected:
-	void OnPickUp() override;
+	void OnPickUp(bool bClick) override;
 
 	FRLAbilityInfo AbilityInfo;
 public:
 	UFUNCTION(BlueprintCallable)
 	void SetAbilityInfo(FRLAbilityInfo Info) { AbilityInfo = Info; };
 	
-	UFUNCTION(BlueprintImplementableEvent)
+	UFUNCTION(BlueprintNativeEvent)
 	void InitAbilityActor(FRLAbilityInfo Info);
 
 	UFUNCTION(BlueprintCallable, BlueprintPure)

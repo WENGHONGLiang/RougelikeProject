@@ -85,10 +85,15 @@ public:
 	FGameplayAttributeData SkillIntensity;
 	ATTRIBUTE_ACCESSORS(UAttributeSetBase, SkillIntensity);
 	
-	/* --- 攻击速度 --- */
+	/* --- 普攻速度 --- */
 	UPROPERTY(BlueprintReadOnly, Category = "Vital Attribute")
 	FGameplayAttributeData AttackSpeed;
 	ATTRIBUTE_ACCESSORS(UAttributeSetBase, AttackSpeed);
+	
+	/* --- 技能急速 --- */
+	UPROPERTY(BlueprintReadOnly, Category = "Vital Attribute")
+	FGameplayAttributeData SkillSpeed;
+	ATTRIBUTE_ACCESSORS(UAttributeSetBase, SkillSpeed);
 	
 	/* --- 护甲 --- */
 	UPROPERTY(BlueprintReadOnly, Category = "Vital Attribute")

@@ -11,25 +11,31 @@ ARLAbilityActor::ARLAbilityActor()
 	
 }
 
-void ARLAbilityActor::OnPickUp()
+void ARLAbilityActor::OnPickUp(bool bClick)
 {
-	Super::OnPickUp();
+	Super::OnPickUp(bClick);
 
-	if(!bBindPickEvent)
+	if(!bBindPickEvent && !bClick)
 		return;
 
-	URLAbilitySystemLibrary::GetAbilityMenuWidgetController(this)->AddAbility(AbilityInfo.AbilityTag);
+	if(URLAbilitySystemLibrary::GetAbilityMenuWidgetController(this)->AddAbility(AbilityInfo.AbilityTag, AbilityInfo.AbilityLevel))
+	{
+		URLAbilitySystemComponent* ASC = Cast<URLAbilitySystemComponent>(PlayerCharacter->GetAbilitySystemComponent());
 	
-	URLAbilitySystemComponent* ASC = Cast<URLAbilitySystemComponent>(PlayerCharacter->GetAbilitySystemComponent());
-	
-	ASC->AddCharacterAbility(AbilityInfo.AbilityClass, false);
+		ASC->AddCharacterAbility(AbilityInfo.AbilityClass, AbilityInfo.AbilityLevel, false);
 
-	URLAbilitySystemLibrary::GetOverlayWidgetController(this)->HideMessage(All);
-	Destroy();
+		URLAbilitySystemLibrary::GetOverlayWidgetController(this)->HideMessage(All);
+		Destroy();
+	}
+}
+
+void ARLAbilityActor::InitAbilityActor_Implementation(FRLAbilityInfo Info)
+{
+	SetAbilityInfo(Info);
 }
 
 void ARLAbilityActor::BeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
-	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+                                   UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
 	ARLCharacter* Character = Cast<ARLCharacter>(OtherActor);
 	if(!Character)

@@ -39,6 +39,11 @@ void FRLGameplayTags::InitializeNativeGameplayTags()
 		FString("Attack Speed")
 		);
 	
+	GameplayTags.Attributes_SkillSpeed = UGameplayTagsManager::Get().AddNativeGameplayTag(
+		FName("Attributes.SkillSpeed"),
+		FString("Skill Speed")
+		);
+	
 	GameplayTags.Attributes_Defense = UGameplayTagsManager::Get().AddNativeGameplayTag(
 		FName("Attributes.Defense"),
 		FString("Defense")

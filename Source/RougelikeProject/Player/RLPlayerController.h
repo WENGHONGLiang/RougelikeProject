@@ -30,6 +30,7 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void CallInteract() { OnInteractEvent.Broadcast(); };
 
+	UFUNCTION(BlueprintCallable)
 	void SetCanMove(const bool bCan) { bCanMove = bCan; }
 
 protected:

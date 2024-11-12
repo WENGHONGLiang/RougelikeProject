@@ -4,6 +4,7 @@
 #include "RLSubAbilityWidget.h"
 
 #include "RougelikeProject/AbilitySystem/RLGameplayTags.h"
+#include "RougelikeProject/UI/WidgetController/AbilityMenuWidgetController.h"
 
 URLSubAbilityWidget::URLSubAbilityWidget()
 {
@@ -18,5 +19,11 @@ void URLSubAbilityWidget::StoreAbilityInfo(FRLAbilityInfo info)
 		HasAbility = false;
 	else
 		HasAbility = true;
+}
+
+void URLSubAbilityWidget::AddAblityLevel()
+{
+	UAbilityMenuWidgetController* AbilityMenuWidgetController = Cast<UAbilityMenuWidgetController>(WidgetController);
+	AbilityMenuWidgetController->AddAbilityLevel(AbilityInfo.AbilityTag);
 }
 
