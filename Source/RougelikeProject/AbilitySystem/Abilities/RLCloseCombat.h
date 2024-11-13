@@ -15,7 +15,7 @@ class ROUGELIKEPROJECT_API URLCloseCombat : public URLGameplayAbility
 	
 public:
 	UFUNCTION(BlueprintCallable)
-	void Attack(AActor* TargetActor);
+	void Attack(AActor* TargetActor, float AttackDistance);
 	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	TSubclassOf<UGameplayEffect> DamageEffectClass;

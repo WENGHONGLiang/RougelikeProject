@@ -43,7 +43,6 @@ void ARLPlayerController::BeginPlay()
 		HUD->InitLevelMap(this, RLPlayerState->GetAbilitySystemComponent(), RLPlayerState->GetAttributeSet(), RLPlayerState);
 		HUD->InitShop(this, RLPlayerState->GetAbilitySystemComponent(), RLPlayerState->GetAttributeSet(), RLPlayerState);
 	}
-	
 }
 
 void ARLPlayerController::SetupInputComponent()
@@ -103,7 +102,7 @@ void ARLPlayerController::AutoRun()
 		const FVector LocationOnSpline = Spline->FindLocationClosestToWorldLocation(ControllerPawn->GetActorLocation(), ESplineCoordinateSpace::World);
 		const FVector Direction = Spline->FindDirectionClosestToWorldLocation(LocationOnSpline, ESplineCoordinateSpace::World);
 		ControllerPawn->AddMovementInput(Direction);
-
+		
 		const float DistanceToDestination = (LocationOnSpline - CachedDestination).Length();
 		if(DistanceToDestination <= AutoRunAcceptanceRadius)
 		{

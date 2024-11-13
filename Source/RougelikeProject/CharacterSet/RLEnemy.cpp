@@ -67,8 +67,9 @@ void ARLEnemy::InitAbilityActorInfo()
 
 	// 初始属性
 	FCharacterClassDefaultInfo info = CharacterInfo->GetClassDefaultInfo(CharacterType);
-	ApplyEffectToSelf(info.Attributes, GetCharacterLevel());
+	ApplyEffectToSelf(info.Attributes, 1);
 	RewardMoney = info.RewardMoney;
+	RewardExp = info.RewardExp;
 	
 	// 添加初始技能
 	AddCharacterAbilities();
@@ -88,6 +89,7 @@ void ARLEnemy::CharacterDie()
 	Super::CharacterDie();
 
 	Cast<ARLPlayerState>(UGameplayStatics::GetPlayerState(this, 0))->AddMoney(RewardMoney);
+	Cast<ARLPlayerState>(UGameplayStatics::GetPlayerState(this, 0))->AddExp(RewardExp);
 }
 
 void ARLEnemy::UseAbility(const FGameplayTag& InputTag)

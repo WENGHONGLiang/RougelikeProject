@@ -16,6 +16,7 @@ enum MessageHideMode
 
 // 数值改变事件 // 在 Widget 蓝图中注册
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnAttributeChangedSignature, float, NewValue);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnExpAttributeChangedSignature, int32, CurExp, int32, UpgradeNeedExp);
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnMessageSignature, FRLMessageInfo, MessageInfo);
 
@@ -40,6 +41,12 @@ public:
 	
 	UPROPERTY(BlueprintAssignable, Category="GAS|Attributes")
 	FOnAttributeChangedSignature OnMoneyChanged;
+	
+	UPROPERTY(BlueprintAssignable, Category="GAS|Attributes")
+	FOnAttributeChangedSignature OnPlayerLevelChanged;
+	
+	UPROPERTY(BlueprintAssignable, Category="GAS|Attributes")
+	FOnExpAttributeChangedSignature OnExpChanged;
 
 	UPROPERTY(EditDefaultsOnly)
 	TObjectPtr<UMessageConfig> MessageConfig;

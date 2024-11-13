@@ -15,6 +15,8 @@ void UOverlayWidgetController::BroadcastInitialValues()
 	OnHealthChanged.Broadcast(WAttributeSet->GetHealth());
 	OnMaxHealthChanged.Broadcast(WAttributeSet->GetMaxHealth());
 	OnMoneyChanged.Broadcast(RLPS->GetMoney());
+	OnPlayerLevelChanged.Broadcast(RLPS->GetPlayerLevel());
+	OnExpChanged.Broadcast(RLPS->GetExp(), RLPS->GetUpgradeNeedExp());
 }
 
 void UOverlayWidgetController::BindCallbacksToDependencies()
@@ -42,6 +44,14 @@ void UOverlayWidgetController::BindCallbacksToDependencies()
 	RLPS->OnMoneyChanged.AddLambda([this](int32 NewMoney)
 		{
 			OnMoneyChanged.Broadcast(NewMoney);
+		});
+	RLPS->OnPlayerLevelChanged.AddLambda([this](int32 NewLevel)
+		{
+			OnPlayerLevelChanged.Broadcast(NewLevel);
+		});
+	RLPS->OnExpChanged.AddLambda([this](int32 Exp, int32 UpgradeNeedExp)
+		{
+			OnExpChanged.Broadcast(Exp, UpgradeNeedExp);
 		});
 }
 

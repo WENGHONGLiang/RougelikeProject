@@ -78,6 +78,12 @@ void ARLGameMode::SpawnAbilityActorAtLocation(FGameplayTag AbilityTag, FVector L
 	AbilityActor->InitAbilityActor(Info);
 }
 
+void ARLGameMode::SpawnAblityActorAroundPlayer(FGameplayTag AbilityTag, float AbilityLevel)
+{
+	FVector PlayerLocation = UGameplayStatics::GetPlayerPawn(this, 0)->GetActorLocation();
+	SpawnAbilityActorAtLocation(AbilityTag, FVector(PlayerLocation.X + FMath::RandRange(-90, 90), PlayerLocation.Y + FMath::RandRange(-90, 90), 0), AbilityLevel);
+}
+
 float ARLGameMode::GetAbilityBaseDamageWithAbilityTag(FGameplayTag AbilityTag)
 {
 	FRLAbilityInfo& Info = AbilityConfig->FindAbilityInfo(AbilityTag);
@@ -85,8 +91,13 @@ float ARLGameMode::GetAbilityBaseDamageWithAbilityTag(FGameplayTag AbilityTag)
 	return Info.AbilityBaseDamage;
 }
 
-void ARLGameMode::SpawnAblityActorAroundPlayer(FGameplayTag AbilityTag, float AbilityLevel)
+ARLEnemy* ARLGameMode::SpawnEnemyAtLocation(ECharacterType EnemyType, FVector Location)
 {
-	FVector PlayerLocation = UGameplayStatics::GetPlayerPawn(this, 0)->GetActorLocation();
-	SpawnAbilityActorAtLocation(AbilityTag, FVector(PlayerLocation.X + FMath::RandRange(-90, 90), PlayerLocation.Y + FMath::RandRange(-90, 90), 0), AbilityLevel);
+	FCharacterClassDefaultInfo Info = CharacterInfos->GetClassDefaultInfo(EnemyType);
+	ARLEnemy* Enemy = Cast<ARLEnemy>(GetWorld()->SpawnActor(Info.CharacterClass, &Location));
+
+	// TODO: 保存 Enemy 后续使用
+	
+	return Enemy;
 }
+

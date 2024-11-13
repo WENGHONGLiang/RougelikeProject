@@ -6,6 +6,7 @@
 #include "Engine/DataAsset.h"
 #include "CharacterInfo.generated.h"
 
+class ARLCharacterBase;
 class UGameplayEffect;
 
 // 角色 / 敌人类型配置
@@ -27,6 +28,9 @@ struct FCharacterClassDefaultInfo
 	GENERATED_BODY()
 
 	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<ARLCharacterBase> CharacterClass;
+	
+	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<UGameplayEffect> Attributes;
 	
 	UPROPERTY(EditDefaultsOnly)
@@ -38,6 +42,9 @@ struct FCharacterClassDefaultInfo
 	// 杀死敌人得到金币
 	UPROPERTY(EditDefaultsOnly)
 	int32 RewardMoney;
+	
+	UPROPERTY(EditDefaultsOnly)
+	int32 RewardExp;
 
 	// 其它特性，如初始技能...
 };

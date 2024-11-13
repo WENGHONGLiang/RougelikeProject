@@ -43,11 +43,17 @@ void UAttributeSetBase::PostGameplayEffectExecute(const FGameplayEffectModCallba
 	FEffectProperties Props;
 	SetEffectProperties(Data, Props);
 
+	// MaxHealth 变大时，Health要按一定比例跟着变
+	if(Data.EvaluatedData.Attribute == GetMaxHealthAttribute())
+	{
+		// Fixme:暂时按1.15比例提升，同时还未考虑最大生命值变低的情况
+		SetHealth(FMath::Clamp(GetHealth() * 1.15f, 0.f, GetMaxHealth()));
+	}
+	
 	// Clamp实际值
 	if(Data.EvaluatedData.Attribute == GetHealthAttribute())
 	{
 		SetHealth(FMath::Clamp(GetHealth(), 0.f, GetMaxHealth()));
-		UE_LOG(LogTemp, Warning, TEXT("Change Health on %s, Health: %f"), *Props.TargetAvatarActor->GetName(), GetHealth());
 	}
 
 	// 使用 IncomingDamage 做一系列属性计算，最终作用于 Health

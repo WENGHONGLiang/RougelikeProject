@@ -3,6 +3,7 @@
 
 #include "RLCharacter.h"
 
+#include "GameFramework/CharacterMovementComponent.h"
 #include "RougelikeProject/AbilitySystem/RLAbilitySystemComponent.h"
 #include "RougelikeProject/ArributeBaseSet/AttributeSetBase.h"
 #include "RougelikeProject/Player/RLPlayerController.h"
@@ -40,7 +41,6 @@ void ARLCharacter::InitAbilityActorInfo()
 	AbilitySystemComponent = RLPlayerState->GetAbilitySystemComponent();
 	RLAbilitySystemComponent = Cast<URLAbilitySystemComponent>(AbilitySystemComponent);
 	AttributeSet = RLPlayerState->GetAttributeSet();
-	CharacterLevel = RLPlayerState->GetPlayerLevel();
 	
 	if(!RLPlayerState->HasInit()) // 第一次需要对属性、技能初始化
 	{
@@ -51,7 +51,7 @@ void ARLCharacter::InitAbilityActorInfo()
 
 		// 初始属性 
 		FCharacterClassDefaultInfo info = CharacterInfo->GetClassDefaultInfo(CharacterType);
-		ApplyEffectToSelf(info.Attributes, GetCharacterLevel());
+		ApplyEffectToSelf(info.Attributes, 1);
 
 		// 初始技能
 		AddCharacterAbilities();
@@ -76,6 +76,13 @@ void ARLCharacter::InitAbilityActorInfo()
 	RLAbilitySystemComponent->OnGameplayEffectApplied.AddUObject(this, &ARLCharacter::GameplayEffectApplied);
 	Cast<UAttributeSetBase>(AttributeSet)->OnCharacterDie.AddDynamic(this, &ARLCharacter::CharacterDie);
 	
+	// 移速
+	const UAttributeSetBase* RLAS = Cast<UAttributeSetBase>(GetAttributeSet());
+	GetCharacterMovement()->MaxWalkSpeed = RLAS->GetMoveSpeed();
+	AbilitySystemComponent->GetGameplayAttributeValueChangeDelegate(RLAS->GetMoveSpeedAttribute()).AddLambda([this](const FOnAttributeChangeData& Data)
+		{
+			GetCharacterMovement()->MaxWalkSpeed = Data.NewValue;
+		});
 }
 
 void ARLCharacter::GameplayEffectApplied(const FGameplayTagContainer& TagContainer)

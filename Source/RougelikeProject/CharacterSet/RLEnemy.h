@@ -26,6 +26,7 @@ public:
 	FOnAttributeChangedSignature OnMaxHealthChanged;
 
 	int32 RewardMoney;
+	int32 RewardExp;
 	
 protected:
 	virtual void BeginPlay() override;

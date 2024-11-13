@@ -5,14 +5,14 @@
 #include "CoreMinimal.h"
 #include "GameFramework/GameModeBase.h"
 #include "RougelikeProject/Actor/PropertyActor.h"
+#include "RougelikeProject/CharacterSet/RLEnemy.h"
 #include "RougelikeProject/UI/HUD/RLHUD.h"
 #include "RougelikeProject/UI/Widget/LevelMapWidget.h"
 #include "RougelikeProject/UI/WidgetController/LevelMapWidgetController.h"
 #include "RLGameMode.generated.h"
 
-/**
- * 
- */
+
+
 UCLASS()
 class ROUGELIKEPROJECT_API ARLGameMode : public AGameModeBase
 {
@@ -34,12 +34,15 @@ public:
 	void SpawnAbilityActorAtLocation(FGameplayTag AbilityTag, FVector3d Location, float AbilityLevel);
 
 	float GetAbilityBaseDamageWithAbilityTag(FGameplayTag AbilityTag);
-private:
+
+	/* --- 敌人生成 --- */
+	ARLEnemy* SpawnEnemyAtLocation(ECharacterType EnemyType, FVector Location);
 	
+private:
+	UPROPERTY()
 	ARLHUD* RLHUD;
 	
 	/* --- Level --- */
-	
 	int CurrentLevelNodeIndex;
 	int LastLevelNodeIndex;
 	FName CurrentLevelName;
@@ -57,4 +60,8 @@ private:
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<ARLCharacter> PlayerCharacterClass;
 	bool bInit = false;
+
+	/* --- 敌人生成 --- */
+	UPROPERTY(EditAnywhere)
+	UCharacterClassInfo* CharacterInfos;
 };

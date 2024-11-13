@@ -24,7 +24,10 @@ public:
 	// Implement IAbilitySystemInterface
 	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
 	UAttributeSet* GetAttributeSet() const { return AttributeSet; }	
-	int32 GetCharacterLevel() const { return CharacterLevel; }
+	int32 GetCharacterLevel();
+
+	UFUNCTION(BlueprintCallable)
+	bool GetCharacterAlive() const { return isAlive; }
 	
 	// 对自身使用 GE
 	UFUNCTION(BlueprintCallable)
@@ -33,9 +36,6 @@ public:
 protected:
 	UPROPERTY()
 	UAbilitySystemComponent* AbilitySystemComponent;
-	
-	UPROPERTY(VisibleAnywhere, Category="Character Attributes")
-	int32 CharacterLevel = 1;
 	
 	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category="Base Attributes")
 	TSubclassOf<UGameplayEffect> DefaultAttributes;

@@ -6,6 +6,7 @@
 #include "RougelikeProject/AbilitySystem/RLAbilitySystemComponent.h"
 #include "RougelikeProject/ArributeBaseSet/AttributeSetBase.h"
 #include "RougelikeProject/AbilitySystem/RLGameplayTags.h"
+#include "RougelikeProject/Player/RLPlayerState.h"
 
 
 // Sets default values
@@ -16,6 +17,12 @@ ARLCharacterBase::ARLCharacterBase() {
 
 UAbilitySystemComponent* ARLCharacterBase::GetAbilitySystemComponent() const {
 	return AbilitySystemComponent;
+}
+
+int32 ARLCharacterBase::GetCharacterLevel()
+{
+	ARLPlayerState* PS = Cast<ARLPlayerState>(GetPlayerState());
+	return PS->GetPlayerLevel();
 }
 
 void ARLCharacterBase::ApplyEffectToSelf(TSubclassOf<UGameplayEffect> GameplayEffectClass, int32 Level)
