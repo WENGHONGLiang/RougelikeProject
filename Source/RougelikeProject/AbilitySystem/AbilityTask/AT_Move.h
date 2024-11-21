@@ -37,6 +37,9 @@ protected:
 	FVector StartPosition;
 	float Speed;
 
+	float MaxMoveTime;
+	float MoveTime;
+
 	UPROPERTY()
 	AActor* AvatarActor;
 };

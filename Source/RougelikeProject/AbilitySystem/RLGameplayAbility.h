@@ -29,7 +29,13 @@ public:
 	// 在 AbilityConfig 配置
 	UPROPERTY(BlueprintReadOnly)
 	float BaseDamage;
+	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	TSubclassOf<UGameplayEffect> DamageEffectClass;
 
 	UFUNCTION(BlueprintPure)
 	ARLCharacterBase* GetCharacterBase();
+
+	UFUNCTION(BlueprintCallable)
+	void BeatBackEnemyAroundPlayer(float Distance, float ImpulseAmount, bool bCauseDamage);
 };

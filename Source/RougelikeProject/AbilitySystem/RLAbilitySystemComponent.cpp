@@ -55,9 +55,9 @@ void URLAbilitySystemComponent::AddCharacterAbility(const TSubclassOf<UGameplayA
 	}
 }
 
-void URLAbilitySystemComponent::AddAbilityLevel(const FGameplayTag& AbilityTag)
+void URLAbilitySystemComponent::AddAbilityLevel(const FGameplayTag& AbilityTag, bool bUseSkillCoin, int Amount)
 {
-	if(AbilityTag == FRLGameplayTags::Get().HeroAbility_Empty)
+	if(AbilityTag == FRLGameplayTags::Get().HeroAbility_Empty || AbilityTag == FRLGameplayTags::Get().Equipment_Empty)
 		return;
 
 	for(auto& AbilitySpec : GetActivatableAbilities())
@@ -66,14 +66,31 @@ void URLAbilitySystemComponent::AddAbilityLevel(const FGameplayTag& AbilityTag)
 		{
 			ARLPlayerState* RLPS = Cast<ARLPlayerState>(GetOwnerActor());
 			ARLCharacter* RLCharacter = Cast<ARLCharacter>(GetAvatarActor());
-			
-			if(AbilitySpec.Level <= 4 && RLPS->CostMoney(RLCharacter->AbilityLevelCost.GetValueAtLevel(AbilitySpec.Level)))
+
+			// 在技能升级点，使用技能币升级
+			if(bUseSkillCoin)
 			{
-				AbilitySpec.Level += 1;
-				OnAbilityLevelUpdate.Broadcast(AbilitySpec.DynamicAbilityTags.First(), AbilitySpec.Ability->AbilityTags.First(), AbilitySpec.Level);
+				if(AbilitySpec.Level <= 4 && RLPS->CostSkillCoin(RLCharacter->AbilityLevelCost.GetValueAtLevel(AbilitySpec.Level)))
+				{
+					AbilitySpec.Level += 1;
+				}
 			}
+			// 合成等方式升级
+			else
+			{
+				AbilitySpec.Level += Amount;
+				AbilitySpec.Level = AbilitySpec.Level > 5 ? 5 : AbilitySpec.Level; // 最高 5 级
+			}
+
+			
+			if(AbilityTag.MatchesTag(FRLGameplayTags::Get().Equipment))
+				OnEquipmentLevelUpdate.Broadcast(AbilitySpec.DynamicAbilityTags.First(), AbilitySpec.Ability->AbilityTags.First(), AbilitySpec.Level);
+			else
+				OnAbilityLevelUpdate.Broadcast(AbilitySpec.DynamicAbilityTags.First(), AbilitySpec.Ability->AbilityTags.First(), AbilitySpec.Level);
+			
 			break;
 		}
+
 	}
 }
 
@@ -94,7 +111,9 @@ void URLAbilitySystemComponent::RemoveCharacterAblity(const FGameplayTag& Abilit
 
 void URLAbilitySystemComponent::UpdateCharacterAbilitiesInput(const FGameplayTag& AbilityTag, const FGameplayTag& NewInputTag)
 {
-	if(AbilityTag == FRLGameplayTags::Get().HeroAbility_Empty)
+	if(AbilityTag == FRLGameplayTags::Get().HeroAbility_Empty || AbilityTag == FRLGameplayTags::Get().Equipment_Empty)
+		return;
+	if(NewInputTag.MatchesTagExact(FRLGameplayTags::Get().InputTag_Empty))
 		return;
 	
 	for(auto& AbilitySpec : GetActivatableAbilities())
@@ -102,8 +121,8 @@ void URLAbilitySystemComponent::UpdateCharacterAbilitiesInput(const FGameplayTag
 		if(AbilitySpec.Ability->AbilityTags.First().MatchesTagExact(AbilityTag))
 		{
 			AbilitySpec.DynamicAbilityTags.Reset();
-			if(!NewInputTag.MatchesTagExact(FRLGameplayTags::Get().InputTag_Empty))
-				AbilitySpec.DynamicAbilityTags.AddTag(NewInputTag);
+			AbilitySpec.DynamicAbilityTags.AddTag(NewInputTag);
+
 			break;
 		}
 	}
@@ -143,6 +162,22 @@ void URLAbilitySystemComponent::AbilityInputTagHeld(const FGameplayTag& InputTag
 {
 	if(!InputTag.IsValid()) return;
 
+	bool bHasAbility = false; // 先检查是否有技能 // 没有技能但是有装备碎片的情况，装备碎片不能被启用
+	
+	for(auto& AbilitySpec : GetActivatableAbilities())
+	{
+		if(AbilitySpec.DynamicAbilityTags.HasTagExact(InputTag))
+		{
+			if(!AbilitySpec.IsActive() && !AbilitySpec.Ability->AbilityTags.First().MatchesTag(FRLGameplayTags::Get().Equipment))
+			{
+				bHasAbility = true;
+				break;
+			}
+		}
+	}
+
+	if(!bHasAbility) return;
+	
 	for(auto& AbilitySpec : GetActivatableAbilities())
 	{
 		if(AbilitySpec.DynamicAbilityTags.HasTagExact(InputTag))
@@ -172,7 +207,8 @@ void URLAbilitySystemComponent::AbilityInputTagReleased(const FGameplayTag& Inpu
 bool URLAbilitySystemComponent::ActivateAbilityDirectly(const FGameplayTag& InputTag)
 {
 	if(!InputTag.IsValid()) return false;
-	
+
+	bool bActivate = false;
 	for(auto& AbilitySpec :  GetActivatableAbilities())
 	{
 		if(AbilitySpec.DynamicAbilityTags.HasTagExact(InputTag))
@@ -180,21 +216,24 @@ bool URLAbilitySystemComponent::ActivateAbilityDirectly(const FGameplayTag& Inpu
 			if(!AbilitySpec.IsActive())
 			{
 				TryActivateAbility(AbilitySpec.Handle);
-				return true;
+				bActivate = true;
 			}
 		}
 	}
-	return false;
+	return bActivate;
 }
 
 void URLAbilitySystemComponent::CheckAbilityCoolDown()
 {
 	for(auto& AbilitySpec : GetActivatableAbilities())
 	{
+		// 不显示装备的Cooldown
+		if(AbilitySpec.Ability->AbilityTags.First().MatchesTag(FRLGameplayTags::Get().Equipment))
+			continue;
+		
 		UGameplayAbility* Ability = AbilitySpec.GetPrimaryInstance();
 		if(Ability)
 		{
-			UGameplayEffect* GE = Ability->GetCooldownGameplayEffect();
 			float CooldownRemain;
 			float CooldownDuration;
 			FGameplayAbilityActorInfo ActorInfo = Ability->GetActorInfo();

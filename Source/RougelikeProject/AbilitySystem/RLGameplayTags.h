@@ -39,21 +39,17 @@ public:
 	FGameplayTag InputTag_3;
 	FGameplayTag InputTag_4;
 	
-	FGameplayTag InputTag_PickUp; // 交互键
+	FGameplayTag InputTag_PickUp; // 拾取键
 	FGameplayTag InputTag_Interact; // 交互键
+	FGameplayTag InputTag_Crush; // 粉碎道具键
 	
 	FGameplayTag InputTag_Roll; // 闪避键
 
-	/* 测试消息 */
+	/* 消息 */
 	FGameplayTag Message_Tip;
 	FGameplayTag Message_Property;
 	
 	FGameplayTag Message_Tip_PickUp;
-	FGameplayTag Message_Tip_Test1;
-	FGameplayTag Message_Tip_Test2;
- 
-	FGameplayTag Message_Property_Test1;
-	FGameplayTag Message_Property_Test2;
 
 	/* GE Tag, 用于技能判定 和 数值传递 */
 	FGameplayTag GE_Damage;
@@ -62,6 +58,10 @@ public:
 	/* 英雄技能, 大部分技能Tag直接在编辑器添加 */
 	FGameplayTag HeroAbility_Empty;
 	FGameplayTag HeroAbility_Roll;
+
+	/* 英雄装备, 大部分装备Tag直接在编辑器添加 */
+	FGameplayTag Equipment;
+	FGameplayTag Equipment_Empty;
 	
 private:
 	// instance

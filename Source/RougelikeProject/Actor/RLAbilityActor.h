@@ -15,10 +15,12 @@ UCLASS()
 class ROUGELIKEPROJECT_API ARLAbilityActor : public APropertyActor
 {
 	GENERATED_BODY()
+
 	ARLAbilityActor();
-	
 protected:
 	void OnPickUp(bool bClick) override;
+
+	void OnCrush() override;
 
 	FRLAbilityInfo AbilityInfo;
 public:
@@ -32,6 +34,4 @@ public:
 	FRLAbilityInfo GetAbilityInfo() { return AbilityInfo; } ;
 
 	void BeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult) override;
-
-	void EndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex) override;
 };

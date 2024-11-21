@@ -4,6 +4,9 @@
 #include "RLEnemy.h"
 
 #include "AbilitySystemComponent.h"
+#include "AIController.h"
+#include "Components/CapsuleComponent.h"
+#include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "RougelikeProject/AbilitySystem/RLAbilitySystemComponent.h"
 #include "RougelikeProject/ArributeBaseSet/AttributeSetBase.h"
@@ -12,11 +15,15 @@
 
 ARLEnemy::ARLEnemy()
 {
+	ForceDuration = 1.f;
+	ForceTime = 0.f;
+	
 	AbilitySystemComponent = CreateDefaultSubobject<URLAbilitySystemComponent>(TEXT("AbilitySystemComponent"));
 	AttributeSet = CreateDefaultSubobject<UAttributeSetBase>("AttributeSet");
 	
 	HealthBar = CreateDefaultSubobject<UWidgetComponent>("HealthBar");
 	HealthBar->SetupAttachment(GetRootComponent());
+
 }
 
 void ARLEnemy::BeginPlay()
@@ -75,6 +82,23 @@ void ARLEnemy::InitAbilityActorInfo()
 	AddCharacterAbilities();
 
 	Cast<UAttributeSetBase>(AttributeSet)->OnCharacterDie.AddDynamic(this, &ARLEnemy::CharacterDie);
+}
+
+void ARLEnemy::Tick(float DeltaSeconds)
+{
+	Super::Tick(DeltaSeconds);
+	if(bForce)
+	{
+		GetCapsuleComponent()->AddForce(ForceIns);
+		//GetMovementComponent()->AddRadialImpulse(GetActorLocation(), 500, 2000, RIF_Constant, true);
+		//GetCharacterMovement()->AddForce(ForceIns);
+		ForceTime += DeltaSeconds;
+		if(ForceTime > ForceDuration)
+		{
+			ForceTime = 0;
+			bForce = false;
+		}
+	}
 }
 
 void ARLEnemy::GameplayEffectApplied(const FGameplayTagContainer& TagContainer)

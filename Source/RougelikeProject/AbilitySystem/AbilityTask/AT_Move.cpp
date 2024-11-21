@@ -13,7 +13,9 @@ UAT_Move* UAT_Move::CreateATMove(UGameplayAbility* OwningAbility, FVector Direct
 	MyObj->Speed = Speed;
 	MyObj->bLoopEvent = bLoopEvent;
 	MyObj->LoopEventTime = LoopEventTime;
-	MyObj->LoopEventTimeCnt = 0;
+	MyObj->LoopEventTimeCnt = LoopEventTime; // 最开始时调一次
+	MyObj->MaxMoveTime = 1.5f;
+	MyObj->MoveTime = 0.f;
 	
 	return MyObj;
 }
@@ -35,7 +37,7 @@ void UAT_Move::TickTask(float DeltaTime)
 
 	// Loop Event
 	LoopEventTimeCnt += DeltaTime;
-	if(LoopEventTimeCnt >= LoopEventTime)
+	if(bLoopEvent && LoopEventTimeCnt >= LoopEventTime)
 	{
 		OnLoopEvent.Broadcast();
 		LoopEventTimeCnt = 0;
@@ -46,12 +48,16 @@ void UAT_Move::TickTask(float DeltaTime)
 	FVector NewPosition = FMath::Lerp(AvatarActor->GetActorLocation(), EndPosition,Speed * DeltaTime);
 	AvatarActor->SetActorLocation(NewPosition);
 
-	if(FVector::Distance(FVector(NewPosition.X, NewPosition.Y, 0), FVector(EndPosition.X, EndPosition.Y, 0)) < Distance / 10)
+	// 防止卡住
+	MoveTime += DeltaTime;
+	
+	if(MoveTime >= MaxMoveTime || FVector::Distance(FVector(NewPosition.X, NewPosition.Y, 0), FVector(EndPosition.X, EndPosition.Y, 0)) < Distance / 10)
 	{
 		OnMoveEnd.Broadcast();
 		bMoving = false;
 		bTickingTask = false;
 	}
+
 }
 
 void UAT_Move::OnDestroy(bool bInOwnerFinished)

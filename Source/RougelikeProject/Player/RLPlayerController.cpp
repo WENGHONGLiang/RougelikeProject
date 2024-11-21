@@ -96,14 +96,15 @@ void ARLPlayerController::Tick(float DeltaSeconds)
 
 void ARLPlayerController::AutoRun()
 {
-	if(!bAutoRunning) return;
+	if(!bAutoRunning || !bCanMove) return;
 	if(APawn* ControllerPawn = GetPawn())
 	{
 		const FVector LocationOnSpline = Spline->FindLocationClosestToWorldLocation(ControllerPawn->GetActorLocation(), ESplineCoordinateSpace::World);
 		const FVector Direction = Spline->FindDirectionClosestToWorldLocation(LocationOnSpline, ESplineCoordinateSpace::World);
 		ControllerPawn->AddMovementInput(Direction);
-		
-		const float DistanceToDestination = (LocationOnSpline - CachedDestination).Length();
+		const FVector LastLocation = Spline->GetLocationAtSplinePoint(Spline->GetNumberOfSplinePoints()-1, ESplineCoordinateSpace::World);
+		const float DistanceToDestination = (LocationOnSpline - LastLocation).Length();
+		//const float DistanceToDestination = (LocationOnSpline - CachedDestination).Length();
 		if(DistanceToDestination <= AutoRunAcceptanceRadius)
 		{
 			bAutoRunning = false;
@@ -160,7 +161,7 @@ void ARLPlayerController::CursorTrace()
 
 void ARLPlayerController::AbilityInputTagPressed(FGameplayTag InputTag)
 {
-	if(InputTag.MatchesTagExact(FRLGameplayTags::Get().InputTag_RMB) && MovePressTime >= MovePressInterval)
+	if((InputTag.MatchesTagExact(FRLGameplayTags::Get().InputTag_LMB) || InputTag.MatchesTagExact(FRLGameplayTags::Get().InputTag_RMB)) && MovePressTime >= MovePressInterval)
 	{
 		bAutoRunning = false;
 	}
@@ -188,7 +189,7 @@ void ARLPlayerController::AbilityInputTagHeld(FGameplayTag InputTag)
 	if(InputTag.MatchesTagExact(FRLGameplayTags::Get().InputTag_Roll))
 		return;
 	
-	if(InputTag.MatchesTagExact(FRLGameplayTags::Get().InputTag_RMB))
+	if(InputTag.MatchesTagExact(FRLGameplayTags::Get().InputTag_LMB) || InputTag.MatchesTagExact(FRLGameplayTags::Get().InputTag_RMB))
 	{
 		// 点击移动
 		FollowTime += GetWorld()->GetDeltaSeconds();
@@ -203,17 +204,12 @@ void ARLPlayerController::AbilityInputTagHeld(FGameplayTag InputTag)
 			const FVector WorldDir = (CachedDestination - ControllerPawn->GetActorLocation()).GetSafeNormal();
 			ControllerPawn->AddMovementInput(WorldDir);
 		}
-		return;
 	}
 	GetASC()->AbilityInputTagHeld(InputTag);
 }
 
 void ARLPlayerController::AbilityInputTagReleased(FGameplayTag InputTag)
 {
-	if(InputTag.MatchesTagExact(FRLGameplayTags::Get().InputTag_LMB) || InputTag.MatchesTagExact(FRLGameplayTags::Get().InputTag_RMB))
-	{
-		OnMouseClickEvent.Broadcast();
-	}
 	if(InputTag.MatchesTagExact(FRLGameplayTags::Get().InputTag_Interact))
 	{
 		OnInteractEvent.Broadcast();
@@ -222,11 +218,17 @@ void ARLPlayerController::AbilityInputTagReleased(FGameplayTag InputTag)
 	{
 		OnPickUpEvent.Broadcast();
 	}
-	
-	if(InputTag.MatchesTagExact(FRLGameplayTags::Get().InputTag_RMB))
+	if(InputTag.MatchesTagExact(FRLGameplayTags::Get().InputTag_Crush))
 	{
+		OnCrushEvent.Broadcast();
+	}
+	
+	if(InputTag.MatchesTagExact(FRLGameplayTags::Get().InputTag_LMB) || InputTag.MatchesTagExact(FRLGameplayTags::Get().InputTag_RMB))
+	{
+		OnMouseClickEvent.Broadcast();
+		
 		APawn* ControllerPawn = GetPawn();
-		if(FollowTime <= ShortPressThreshold && ControllerPawn && MovePressTime >= MovePressInterval)
+		if(FollowTime <= ShortPressThreshold && ControllerPawn && MovePressTime >= MovePressInterval && bCanMove)
 		{
 			UNavigationPath* NavPath = UNavigationSystemV1::FindPathToLocationSynchronously(this, ControllerPawn->GetActorLocation(), CachedDestination);
 			
@@ -244,8 +246,19 @@ void ARLPlayerController::AbilityInputTagReleased(FGameplayTag InputTag)
 			MovePressTime = 0.f;
 		}
 		FollowTime = 0.f;
-		return;
 	}
 	
 	GetASC()->AbilityInputTagReleased(InputTag);
+}
+
+void ARLPlayerController::SetCanMove(const bool bCan)
+{
+	bCanMove = bCan;
+	
+	if(!bCan)
+	{
+		StopMovement();
+		Spline->ClearSplinePoints();
+		bAutoRunning = false;
+	}
 }

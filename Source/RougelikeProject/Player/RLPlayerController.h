@@ -26,12 +26,13 @@ public:
 	FOnButtonClickSignature OnMouseClickEvent;
 	FOnButtonClickSignature OnInteractEvent;
 	FOnButtonClickSignature OnPickUpEvent;
+	FOnButtonClickSignature OnCrushEvent;
 
 	UFUNCTION(BlueprintCallable)
 	void CallInteract() { OnInteractEvent.Broadcast(); };
 
 	UFUNCTION(BlueprintCallable)
-	void SetCanMove(const bool bCan) { bCanMove = bCan; }
+	void SetCanMove(const bool bCan);
 
 protected:
 	virtual void BeginPlay() override;
@@ -76,7 +77,8 @@ private:
 	float ShortPressThreshold = 0.5f;
 
 	float MovePressTime = 0.f;
-	float MovePressInterval = .5f;
+	UPROPERTY(EditDefaultsOnly)
+	float MovePressInterval = .2f;
 	bool bAutoRunning = false;
 
 	UPROPERTY(EditDefaultsOnly)

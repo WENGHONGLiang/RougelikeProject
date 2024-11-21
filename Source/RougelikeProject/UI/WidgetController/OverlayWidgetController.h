@@ -7,7 +7,12 @@
 #include "RougelikeProject/Data/MessageConfig.h"
 #include "OverlayWidgetController.generated.h"
 
-enum MessageHideMode
+class UEquipmentConfig;
+class UAbilityConfig;
+enum class EQuality : uint8;
+
+UENUM(BlueprintType, Blueprintable)
+enum class EMessageHideMode : uint8
 {
 	Tip,
 	Property,
@@ -18,7 +23,8 @@ enum MessageHideMode
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnAttributeChangedSignature, float, NewValue);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnExpAttributeChangedSignature, int32, CurExp, int32, UpgradeNeedExp);
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnMessageSignature, FRLMessageInfo, MessageInfo);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnTipMessageSignature, FRLMessageInfo, MessageInfo);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_SixParams(FOnPropertyMessageSignature, FText, PropertyName, EQuality, PropertyQuality, FText, PropertyDescription, int, PropertyLevel, float, PropertyBaseDamage, float, PropertyCooldown);
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FEventSignature);
 
@@ -43,6 +49,9 @@ public:
 	FOnAttributeChangedSignature OnMoneyChanged;
 	
 	UPROPERTY(BlueprintAssignable, Category="GAS|Attributes")
+	FOnAttributeChangedSignature OnSkillCoinChanged;
+	
+	UPROPERTY(BlueprintAssignable, Category="GAS|Attributes")
 	FOnAttributeChangedSignature OnPlayerLevelChanged;
 	
 	UPROPERTY(BlueprintAssignable, Category="GAS|Attributes")
@@ -50,19 +59,32 @@ public:
 
 	UPROPERTY(EditDefaultsOnly)
 	TObjectPtr<UMessageConfig> MessageConfig;
+	
+	UPROPERTY(EditDefaultsOnly)
+	TObjectPtr<UAbilityConfig> AbilityConfig;
+	
+	UPROPERTY(EditDefaultsOnly)
+	TObjectPtr<UEquipmentConfig> EquipmentConfig;
 
-	void SetPropertyMessage(FText Message, UTexture2D* Image);
+	void SetPropertyMessage(FText PropertyName, EQuality PropertyQuality, FText PropertyDescription, int PropertyLevel, float PropertyBaseDamage, float PropertyCooldown);
+
+	UFUNCTION(BlueprintCallable)
+	void SetAbilityMessage(FGameplayTag AbilityTag);
+	
+	UFUNCTION(BlueprintCallable)
+	void SetEquipmentMessage(FGameplayTag EquipmentTag);
 	
 	// 由设置 Messge 方调用，如 PropertyActor // 通过 Tag 找到具体消息并传递出去
 	void SetTipMessageByTag(FGameplayTag MessageTag);
 
-	void HideMessage(MessageHideMode mode);
+	UFUNCTION(BlueprintCallable)
+	void HideMessage(EMessageHideMode mode);
 
 	UPROPERTY(BlueprintAssignable, Category="Message")
-	FOnMessageSignature OnTipMessage;
+	FOnTipMessageSignature OnTipMessage;
 
 	UPROPERTY(BlueprintAssignable, Category="Message")
-	FOnMessageSignature OnPropertyMessage;
+	FOnPropertyMessageSignature OnPropertyMessage;
 
 	UPROPERTY(BlueprintAssignable, Category="Message")
 	FEventSignature OnHideTipMessage;

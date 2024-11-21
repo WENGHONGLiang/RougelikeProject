@@ -9,6 +9,15 @@
 
 class UGameplayAbility;
 
+UENUM(Blueprintable, BlueprintType)
+enum class EQuality : uint8
+{
+	White,
+	Blue,
+	Purple,
+	Red
+};
+
 USTRUCT(BlueprintType, Blueprintable)
 struct FRLAbilityInfo
 {
@@ -21,13 +30,30 @@ struct FRLAbilityInfo
 	TSubclassOf<UGameplayAbility> AbilityClass;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	FText AbilityName = FText();
+	
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (MultiLine = true))
 	FText AbilityDescription = FText();
+	
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	EQuality AbilityQuality;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	UTexture2D* AbilityImage = nullptr;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	float AbilityBaseDamage;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	float AbilityBaseCooldown;
+
+	// 出售技能获得的金币
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	float AbilityMoneyValue;
+
+	// 粉碎技能获得的技能币
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	float AbilitySkillCoinValue;
 	
 	UPROPERTY(BlueprintReadOnly)
 	float AbilityLevel;

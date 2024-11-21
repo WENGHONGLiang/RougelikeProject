@@ -11,6 +11,7 @@ ARLPlayerState::ARLPlayerState()
 	AbilitySystemComponent = CreateDefaultSubobject<URLAbilitySystemComponent>("AbilitySystemComp");
 	AttributeSet = CreateDefaultSubobject<UAttributeSetBase>("AttributeSet");
 	Money = 8;
+	SkillCoin = 5;
 	Exp = 0;
 	PlayerLevel = 1;
 	PlayerUpgradeNeededBaseExp = 150;
@@ -48,6 +49,23 @@ bool ARLPlayerState::CostMoney(int32 Amount)
 	
 	Money -= Amount;
 	OnMoneyChanged.Broadcast(Money);
+
+	return true;
+}
+
+void ARLPlayerState::AddSkillCoin(int32 Amount)
+{
+	SkillCoin += Amount;
+	OnSkillCoinChanged.Broadcast(SkillCoin);
+}
+
+bool ARLPlayerState::CostSkillCoin(int32 Amount)
+{
+	if(SkillCoin < Amount)
+		return false;
+
+	SkillCoin -= Amount;
+	OnSkillCoinChanged.Broadcast(SkillCoin);
 
 	return true;
 }

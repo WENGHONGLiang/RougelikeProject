@@ -27,6 +27,7 @@ public:
 
 	int32 GetPlayerLevel() const { return PlayerLevel; }
 	int32 GetMoney() const { return Money; }
+	int32 GetSkillCoin() const { return SkillCoin; }
 	int32 GetExp() const { return Exp; }
 	int32 GetUpgradeNeedExp();
 
@@ -34,6 +35,9 @@ public:
 	
 	void AddMoney(int32 Amount);
 	bool CostMoney(int32 Amount);
+	
+	void AddSkillCoin(int32 Amount);
+	bool CostSkillCoin(int32 Amount);
 
 	void AddExp(int32 Amount);
 
@@ -42,6 +46,7 @@ public:
 	bool HasInit() const { return AlreadyInit; }
 	
 	FOnValueChangedSignature OnMoneyChanged;
+	FOnValueChangedSignature OnSkillCoinChanged;
 	FOnValueChangedSignature OnPlayerLevelChanged;
 	FOnExpChangedSignature OnExpChanged;
 	
@@ -57,6 +62,9 @@ protected:
 	
 	UPROPERTY(VisibleAnywhere, Category="Character Attribute")
 	int32 Money;
+	
+	UPROPERTY(VisibleAnywhere, Category="Character Attribute")
+	int32 SkillCoin;
 	
 	UPROPERTY(VisibleAnywhere, Category="Character Attribute")
 	int32 Exp;

@@ -60,6 +60,7 @@ void APropertyActor::BeginOverlap(UPrimitiveComponent* OverlappedComponent, AAct
 		PlayerCharacter = Character;
 	    PlayerController = Cast<ARLPlayerController>(Character->GetPlayerController());
 		PlayerController->OnPickUpEvent.AddDynamic(this, &APropertyActor::OnButtonPickUp);
+		PlayerController->OnCrushEvent.AddDynamic(this, &APropertyActor::OnCrush);
 	}
 	
 	URLAbilitySystemLibrary::GetOverlayWidgetController(this)->SetTipMessageByTag(MessageTipTag); // 拾取提示
@@ -72,7 +73,7 @@ void APropertyActor::EndOverlap(UPrimitiveComponent* OverlappedComponent, AActor
 	if(!Cast<ARLCharacter>(OtherActor))
 		return;
 	
-	URLAbilitySystemLibrary::GetOverlayWidgetController(this)->HideMessage(All);
+	URLAbilitySystemLibrary::GetOverlayWidgetController(this)->HideMessage(EMessageHideMode::All);
 	bBindPickEvent = false;
 }
 
@@ -90,6 +91,12 @@ void APropertyActor::OnButtonPickUp()
 void APropertyActor::OnPickUp(bool bClick)
 {
 	if(!bBindPickEvent && !bClick)
+		return;
+}
+
+void APropertyActor::OnCrush()
+{
+	if(!bBindPickEvent)
 		return;
 }
 

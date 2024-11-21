@@ -16,6 +16,12 @@ class ROUGELIKEPROJECT_API ARLRecoverActor : public ARLInteractableActor
 	
 protected:
 	UPROPERTY(EditAnywhere)
+	FGameplayTag MessageTipTag_InsufficientMoney;
+	
+	UPROPERTY(EditAnywhere)
+	int Cost = 15;
+	
+	UPROPERTY(EditAnywhere)
 	TSubclassOf<UGameplayEffect> GE_Recover;
 	
 	virtual void BeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult) override;

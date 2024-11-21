@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "RLCharacterBase.h"
+#include "PhysicsEngine/RadialForceComponent.h"
 #include "RougelikeProject/AbilitySystem/RLAbilitySystemComponent.h"
 #include "RLCharacter.generated.h"
 
@@ -16,8 +17,14 @@ class ROUGELIKEPROJECT_API ARLCharacter : public ARLCharacterBase
 	GENERATED_BODY()
 	
 protected:
-
+	ARLCharacter();
+	
 	void Tick(float DeltaSeconds) override;
+
+	void Destroyed() override;
+	
+	UPROPERTY(VisibleAnywhere)
+	URadialForceComponent* RadialForceComp;
 	
 	virtual void PossessedBy(AController* NewController) override;
 	virtual void InitAbilityActorInfo() override;
@@ -30,10 +37,12 @@ protected:
 	UPROPERTY()
 	APlayerController* PlayerController;
 
-
+	FDelegateHandle MoveSpeedChangedDelegateHandle;
 public:
 	APlayerController* GetPlayerController() { return PlayerController; };
 
 	UPROPERTY(EditDefaultsOnly)
 	FScalableFloat AbilityLevelCost;
+
+	void AddRadialForce(float Amount, float Radius);
 };

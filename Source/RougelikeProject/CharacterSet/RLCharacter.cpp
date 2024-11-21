@@ -10,6 +10,12 @@
 #include "RougelikeProject/Player/RLPlayerState.h"
 #include "RougelikeProject/UI/HUD/RLHUD.h"
 
+ARLCharacter::ARLCharacter()
+{
+	RadialForceComp = CreateDefaultSubobject<URadialForceComponent>("RadialForceComp");
+	RadialForceComp->SetupAttachment(GetRootComponent());
+}
+
 void ARLCharacter::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
@@ -19,6 +25,7 @@ void ARLCharacter::Tick(float DeltaSeconds)
 		RLAbilitySystemComponent->CheckAbilityCoolDown();
 	}
 }
+
 
 void ARLCharacter::PossessedBy(AController* NewController)
 {
@@ -79,10 +86,10 @@ void ARLCharacter::InitAbilityActorInfo()
 	// 移速
 	const UAttributeSetBase* RLAS = Cast<UAttributeSetBase>(GetAttributeSet());
 	GetCharacterMovement()->MaxWalkSpeed = RLAS->GetMoveSpeed();
-	AbilitySystemComponent->GetGameplayAttributeValueChangeDelegate(RLAS->GetMoveSpeedAttribute()).AddLambda([this](const FOnAttributeChangeData& Data)
-		{
-			GetCharacterMovement()->MaxWalkSpeed = Data.NewValue;
-		});
+	MoveSpeedChangedDelegateHandle = AbilitySystemComponent->GetGameplayAttributeValueChangeDelegate(RLAS->GetMoveSpeedAttribute()).AddLambda([this](const FOnAttributeChangeData& Data)
+	{
+		GetCharacterMovement()->MaxWalkSpeed = Data.NewValue;
+	});
 }
 
 void ARLCharacter::GameplayEffectApplied(const FGameplayTagContainer& TagContainer)
@@ -90,4 +97,28 @@ void ARLCharacter::GameplayEffectApplied(const FGameplayTagContainer& TagContain
 	Super::GameplayEffectApplied(TagContainer);
 
 	// TODO: 角色受到敌人的特殊技能后的效果
+}
+
+void ARLCharacter::AddRadialForce(float Amount, float Radius)
+{
+	GEngine->AddOnScreenDebugMessage(-1, 2, FColor::Yellow, "Add Impulse");
+	RadialForceComp->Radius = Radius;
+	RadialForceComp->bIgnoreOwningActor = true;
+	RadialForceComp->ForceStrength = Amount;
+	RadialForceComp->ImpulseStrength = Amount;
+	RadialForceComp->bImpulseVelChange = true;
+	RadialForceComp->bAutoActivate = false;
+	RadialForceComp->FireImpulse();
+}
+
+void ARLCharacter::Destroyed()
+{
+	Super::Destroyed();
+
+	if(auto AS = GetAttributeSet())
+	{
+		const UAttributeSetBase* RLAS = Cast<UAttributeSetBase>(AS);
+		if(AbilitySystemComponent && RLAS)
+			AbilitySystemComponent->GetGameplayAttributeValueChangeDelegate(RLAS->GetMoveSpeedAttribute()).Remove(MoveSpeedChangedDelegateHandle);
+	}
 }

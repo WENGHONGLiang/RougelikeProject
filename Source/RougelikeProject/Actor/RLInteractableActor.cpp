@@ -49,7 +49,7 @@ void ARLInteractableActor::EndOverlap(UPrimitiveComponent* OverlappedComponent, 
 		return;
 
 	if(const auto OverlayWidgetController = URLAbilitySystemLibrary::GetOverlayWidgetController(this))
-		OverlayWidgetController->HideMessage(Tip);
+		OverlayWidgetController->HideMessage(EMessageHideMode::Tip);
 	bBindInteractEvent = false;
 }
 

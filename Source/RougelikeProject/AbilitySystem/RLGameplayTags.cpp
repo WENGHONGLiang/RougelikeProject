@@ -104,6 +104,10 @@ void FRLGameplayTags::InitializeNativeGameplayTags()
 		FName("Input.Interact")
 		);
 	
+	GameplayTags.InputTag_Crush = UGameplayTagsManager::Get().AddNativeGameplayTag(
+		FName("Input.Crush")
+		);
+	
 	GameplayTags.InputTag_PickUp = UGameplayTagsManager::Get().AddNativeGameplayTag(
 		FName("Input.PickUp")
 		);
@@ -127,22 +131,6 @@ void FRLGameplayTags::InitializeNativeGameplayTags()
 		FName("Message.Tip.PickUp")
 		);
 	
-	GameplayTags.Message_Tip_Test1 = UGameplayTagsManager::Get().AddNativeGameplayTag(
-		FName("Message.Tip.Test1")
-		);
-
-	GameplayTags.Message_Tip_Test2 = UGameplayTagsManager::Get().AddNativeGameplayTag(
-		FName("Message.Tip.Test2")
-		);
-	
-	GameplayTags.Message_Property_Test1 = UGameplayTagsManager::Get().AddNativeGameplayTag(
-		FName("Message.Property.Test1")
-		);
-	
-	GameplayTags.Message_Property_Test2 = UGameplayTagsManager::Get().AddNativeGameplayTag(
-		FName("Message.Property.Test2")
-		);
-	
 	GameplayTags.GE_Damage = UGameplayTagsManager::Get().AddNativeGameplayTag(
 		FName("GE.Damage")
 		);
@@ -150,6 +138,8 @@ void FRLGameplayTags::InitializeNativeGameplayTags()
 	GameplayTags.GE_Damage_Normal = UGameplayTagsManager::Get().AddNativeGameplayTag(
 		FName("GE.Damage.Normal")
 		);
+
+	/* --- Ability Tag --- */
 	
 	GameplayTags.HeroAbility_Empty = UGameplayTagsManager::Get().AddNativeGameplayTag(
 		FName("HeroAbility.Empty")
@@ -157,5 +147,15 @@ void FRLGameplayTags::InitializeNativeGameplayTags()
 	
 	GameplayTags.HeroAbility_Roll = UGameplayTagsManager::Get().AddNativeGameplayTag(
 		FName("HeroAbility.Roll")
+		);
+
+	/* --- Equipment Tag --- */
+	
+	GameplayTags.Equipment = UGameplayTagsManager::Get().AddNativeGameplayTag(
+		FName("Equipment")
+		);
+	
+	GameplayTags.Equipment_Empty = UGameplayTagsManager::Get().AddNativeGameplayTag(
+		FName("Equipment.Empty")
 		);
 }

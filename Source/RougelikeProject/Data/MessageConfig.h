@@ -16,7 +16,7 @@ struct FRLMessageInfo
 	UPROPERTY(EditDefaultsOnly)
 	FGameplayTag MessageTag = FGameplayTag();
 	
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (MultiLine = true))
 	FText Message = FText();
 	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)

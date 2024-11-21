@@ -32,10 +32,11 @@ void URLAbilityMenuWidget::NativeTick(const FGeometry& MyGeometry, float InDelta
 
 void URLAbilityMenuWidget::OnClicked_LMB()
 {
-	if(!AbilityMenuWidgetController)
-		AbilityMenuWidgetController = Cast<UAbilityMenuWidgetController>(WidgetController);
-	
-	AbilityMenuWidgetController->OnAbilityButtonClicked(FRLGameplayTags::Get().InputTag_LMB, BP_SubAbility_LMB->AbilityInfo.AbilityTag);
+	// 鼠标左键固定
+	//if(!AbilityMenuWidgetController)
+	//	AbilityMenuWidgetController = Cast<UAbilityMenuWidgetController>(WidgetController);
+	//
+	//AbilityMenuWidgetController->OnAbilityButtonClicked(FRLGameplayTags::Get().InputTag_LMB, BP_SubAbility_LMB->AbilityInfo.AbilityTag);
 }
 
 void URLAbilityMenuWidget::OnClicked_1()
@@ -64,10 +65,11 @@ void URLAbilityMenuWidget::OnClicked_3()
 
 void URLAbilityMenuWidget::OnClicked_4()
 {
-	if(!AbilityMenuWidgetController)
-		AbilityMenuWidgetController = Cast<UAbilityMenuWidgetController>(WidgetController);
-	
-	AbilityMenuWidgetController->OnAbilityButtonClicked(FRLGameplayTags::Get().InputTag_4, BP_SubAbility_4->AbilityInfo.AbilityTag);
+	// 键盘 4 固定
+	//if(!AbilityMenuWidgetController)
+	//	AbilityMenuWidgetController = Cast<UAbilityMenuWidgetController>(WidgetController);
+	//
+	//AbilityMenuWidgetController->OnAbilityButtonClicked(FRLGameplayTags::Get().InputTag_4, BP_SubAbility_4->AbilityInfo.AbilityTag);
 }
 
 void URLAbilityMenuWidget::SetDragging(bool bDrag)

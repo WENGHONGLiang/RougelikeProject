@@ -4,11 +4,13 @@
 #include "RLAbilityActor.h"
 
 #include "RougelikeProject/AbilitySystem/RLAbilitySystemLibrary.h"
+#include "RougelikeProject/AbilitySystem/RLGameplayTags.h"
+#include "RougelikeProject/Player/RLPlayerState.h"
 #include "RougelikeProject/UI/HUD/RLHUD.h"
 
 ARLAbilityActor::ARLAbilityActor()
 {
-	
+	AbilityInfo.AbilityTag = FRLGameplayTags::Get().HeroAbility_Empty;
 }
 
 void ARLAbilityActor::OnPickUp(bool bClick)
@@ -17,16 +19,33 @@ void ARLAbilityActor::OnPickUp(bool bClick)
 
 	if(!bBindPickEvent && !bClick)
 		return;
+	const auto AddRes = URLAbilitySystemLibrary::GetAbilityMenuWidgetController(this)->AddProperty(AbilityInfo.AbilityTag, AbilityInfo.AbilityLevel);
 
-	if(URLAbilitySystemLibrary::GetAbilityMenuWidgetController(this)->AddAbility(AbilityInfo.AbilityTag, AbilityInfo.AbilityLevel))
+	// 新技能需要实际添加到ASC
+	if(AddRes == NewlyAdded)
 	{
 		URLAbilitySystemComponent* ASC = Cast<URLAbilitySystemComponent>(PlayerCharacter->GetAbilitySystemComponent());
 	
 		ASC->AddCharacterAbility(AbilityInfo.AbilityClass, AbilityInfo.AbilityLevel, false);
-
-		URLAbilitySystemLibrary::GetOverlayWidgetController(this)->HideMessage(All);
+	}
+	if(AddRes != DontAdd)
+	{
+		URLAbilitySystemLibrary::GetOverlayWidgetController(this)->HideMessage(EMessageHideMode::All);
 		Destroy();
 	}
+}
+
+void ARLAbilityActor::OnCrush()
+{
+	Super::OnCrush();
+
+	if(!bBindPickEvent)
+		return;
+
+	ARLPlayerState* RLPS = PlayerController->GetPlayerState<ARLPlayerState>();
+	RLPS->AddSkillCoin(AbilityInfo.AbilitySkillCoinValue);
+	URLAbilitySystemLibrary::GetOverlayWidgetController(this)->HideMessage(EMessageHideMode::All);
+	Destroy();
 }
 
 void ARLAbilityActor::InitAbilityActor_Implementation(FRLAbilityInfo Info)
@@ -42,12 +61,17 @@ void ARLAbilityActor::BeginOverlap(UPrimitiveComponent* OverlappedComponent, AAc
 		return;
 	
 	Super::BeginOverlap(OverlappedComponent, OtherActor, OtherComp, OtherBodyIndex, bFromSweep, SweepResult);
-	
-	URLAbilitySystemLibrary::GetOverlayWidgetController(this)->SetPropertyMessage(AbilityInfo.AbilityDescription, AbilityInfo.AbilityImage);
-}
 
-void ARLAbilityActor::EndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
-	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
-{
-	Super::EndOverlap(OverlappedComponent, OtherActor, OtherComp, OtherBodyIndex);
+	if(!AbilityInfo.AbilityTag.MatchesTagExact(FRLGameplayTags::Get().HeroAbility_Empty))
+		URLAbilitySystemLibrary::GetOverlayWidgetController(this)->SetPropertyMessage(AbilityInfo.AbilityName, AbilityInfo.AbilityQuality, AbilityInfo.AbilityDescription, AbilityInfo.AbilityLevel, AbilityInfo.AbilityBaseDamage, AbilityInfo.AbilityBaseCooldown);
+	else
+	{
+		FTimerDelegate Delegate = FTimerDelegate::CreateLambda([this]()
+		{
+			if(!AbilityInfo.AbilityTag.MatchesTagExact(FRLGameplayTags::Get().HeroAbility_Empty))
+				URLAbilitySystemLibrary::GetOverlayWidgetController(this)->SetPropertyMessage(AbilityInfo.AbilityName, AbilityInfo.AbilityQuality, AbilityInfo.AbilityDescription, AbilityInfo.AbilityLevel, AbilityInfo.AbilityBaseDamage, AbilityInfo.AbilityBaseCooldown);
+		});
+		FTimerHandle TimerHandle;
+		GetWorld()->GetTimerManager().SetTimer(TimerHandle, Delegate, 0.1f, false);
+	}
 }

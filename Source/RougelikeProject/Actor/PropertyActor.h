@@ -58,6 +58,9 @@ protected:
 	
 	UFUNCTION()
 	virtual void OnPickUp(bool bClick = false);
+	
+	UFUNCTION()
+	virtual void OnCrush();
 
 	UFUNCTION()
 	void Destroyed() override;

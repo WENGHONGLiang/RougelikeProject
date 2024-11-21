@@ -9,6 +9,7 @@
 DECLARE_MULTICAST_DELEGATE_OneParam(FEffectAssetTags, const FGameplayTagContainer&)
 DECLARE_MULTICAST_DELEGATE_TwoParams(FCoolDownUpdateDelegate, const FGameplayTag, float)
 DECLARE_MULTICAST_DELEGATE_ThreeParams(FAbilityEvent, const FGameplayTag, const FGameplayTag, float)
+DECLARE_MULTICAST_DELEGATE_ThreeParams(FEquipmentEvent, const FGameplayTag, const FGameplayTag, float)
 
 UCLASS()
 class ROUGELIKEPROJECT_API URLAbilitySystemComponent : public UAbilitySystemComponent
@@ -21,6 +22,7 @@ public:
 	FAbilityEvent OnGameplayAbilityGive;
 	
 	FAbilityEvent OnAbilityLevelUpdate;
+	FEquipmentEvent OnEquipmentLevelUpdate;
 	
 	FCoolDownUpdateDelegate OnCoolDownTimeUpdate;
 	
@@ -30,7 +32,7 @@ public:
 	
 	void AddCharacterAbility(const TSubclassOf<UGameplayAbility>& AbilityClass, float AbilityLevel = 1, bool bInit = true);
 
-	void AddAbilityLevel(const FGameplayTag& AbilityTag);
+	void AddAbilityLevel(const FGameplayTag& AbilityTag, bool bUseSkillCoin = true, int Amount = 1);
 
 	void RemoveCharacterAblity(const FGameplayTag& AbilityTag);
 	

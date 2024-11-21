@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "RLCharacterBase.h"
 #include "Components/WidgetComponent.h"
+#include "PhysicsEngine/RadialForceComponent.h"
 #include "RougelikeProject/UI/WidgetController/OverlayWidgetController.h"
 #include "RLEnemy.generated.h"
 
@@ -27,10 +28,24 @@ public:
 
 	int32 RewardMoney;
 	int32 RewardExp;
+
+	UPROPERTY(EditAnywhere)
+	float ForceDuration;
+
+	float ForceTime;
+
+	bool bForce;
+
+	FVector ForceIns;
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void OnBeatBack();
 	
 protected:
 	virtual void BeginPlay() override;
 	virtual void InitAbilityActorInfo() override;
+
+	void Tick(float DeltaSeconds) override;
 
 	void CharacterDie() override;
 	
@@ -41,4 +56,6 @@ protected:
 
 	UFUNCTION(BlueprintCallable)
 	void UseAbility(const FGameplayTag& InputTag);
+
+	FTimerHandle StopMovementHandle;
 };

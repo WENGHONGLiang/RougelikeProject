@@ -21,6 +21,7 @@ void ARLEnemySpawner::BeginPlay()
 	Super::BeginPlay();
 
 	BoxComp->OnComponentBeginOverlap.AddDynamic(this, &ARLEnemySpawner::BeginOverlap);
+	Cast<ARLGameMode>(UGameplayStatics::GetGameMode(this))->AddEnemySpawnerNumber();
 }
 
 void ARLEnemySpawner::BeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
@@ -42,7 +43,7 @@ void ARLEnemySpawner::SpawnEnemy()
 	{
 		for (const auto Enemy : CurEnemies)
 		{
-			if(Enemy->GetCharacterAlive()) // 检查敌人是否都死亡是否
+			if(Enemy && Enemy->GetCharacterAlive()) // 检查敌人是否都死亡是否
 				return;
 		}
 	}
@@ -51,36 +52,39 @@ void ARLEnemySpawner::SpawnEnemy()
 		bStartSpawn = true;
 	}
 
-	CurEnemies.Reset();
-	
-	int EnemyIndex = FMath::RandRange(0, EnemyConfig.Num()-1);
-	ECharacterType EnemyType = EnemyConfig[EnemyIndex].EnemyType;
-	int EnemyNumber = EnemyConfig[EnemyIndex].EnemyNumber;
-	ARLGameMode* RLGameMode = Cast<ARLGameMode>(UGameplayStatics::GetGameMode(this));
-	FVector BoxExtent = BoxComp->GetCollisionShape().GetExtent();
-	int SpawnCnt = 0;
-	
-	for(int i = 0; i < EnemyNumber; i++)
+	if(CurTurn < SpawnTurn)
 	{
-		FVector SpawnLocation = FVector(GetActorLocation().X + FMath::RandRange(-BoxExtent.X, BoxExtent.X), GetActorLocation().Y + FMath::RandRange(-BoxExtent.Y, BoxExtent.Y), 10);
-		ARLEnemy* Enemy = RLGameMode->SpawnEnemyAtLocation(EnemyType, SpawnLocation);
-
-		if(!Enemy) // 生成失败，重新生成
+		CurEnemies.Reset();
+		int EnemyIndex = FMath::RandRange(0, EnemyConfig.Num()-1);
+		ECharacterType EnemyType = EnemyConfig[EnemyIndex].EnemyType;
+		int EnemyNumber = EnemyConfig[EnemyIndex].EnemyNumber;
+		ARLGameMode* RLGameMode = Cast<ARLGameMode>(UGameplayStatics::GetGameMode(this));
+		FVector BoxExtent = BoxComp->GetCollisionShape().GetExtent();
+		int SpawnCnt = 0;
+	
+		for(int i = 0; i < EnemyNumber; i++)
 		{
-			i--;
-		}
-		else
-		{
-			CurEnemies.Add(Enemy);
+			FVector SpawnLocation = FVector(GetActorLocation().X + FMath::RandRange(-BoxExtent.X, BoxExtent.X), GetActorLocation().Y + FMath::RandRange(-BoxExtent.Y, BoxExtent.Y), 100);
+			ARLEnemy* Enemy = RLGameMode->SpawnEnemyAtLocation(EnemyType, SpawnLocation);
+
+			if(!Enemy) // 生成失败，重新生成
+            {
+				i--;
+            }
+			else
+			{
+				CurEnemies.Add(Enemy);
+			}
+
+			if(SpawnCnt++ >= 100) // 防死循环
+				break;
 		}
 
-		if(SpawnCnt++ >= 100) // 防死循环
-			break;
+		CurTurn++;
 	}
-
-	CurTurn++;
-	if(CurTurn == SpawnTurn)
+	else // 结束
 	{
 		GetWorld()->GetTimerManager().ClearTimer(SpawnTimerHandle);
+		Cast<ARLGameMode>(UGameplayStatics::GetGameMode(this))->ReduceEnmeySpawnerNumber();
 	}
 }

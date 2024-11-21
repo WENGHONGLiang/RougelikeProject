@@ -5,6 +5,7 @@
 
 #include "Kismet/GameplayStatics.h"
 #include "RougelikeProject/Actor/RLAbilityActor.h"
+#include "RougelikeProject/Actor/RLEquipmentActor.h"
 #include "RougelikeProject/UI/HUD/RLHUD.h"
 #include "UniversalObjectLocators/UniversalObjectLocatorUtils.h"
 
@@ -91,13 +92,55 @@ float ARLGameMode::GetAbilityBaseDamageWithAbilityTag(FGameplayTag AbilityTag)
 	return Info.AbilityBaseDamage;
 }
 
+void ARLGameMode::SpawnEquipmentActorAtLocation(FGameplayTag EquipmentTag, FVector3d Location, float EquipmentLevel)
+{
+	ARLEquipmentActor* EquipmentActor = Cast<ARLEquipmentActor>(GetWorld()->SpawnActor(EquipmentActorClass, &Location));
+	FRLEquipmentInfo Info = EquipmentConfig->FindEquipmentInfo(EquipmentTag);
+	Info.EquipmentLevel = EquipmentLevel;
+	
+	EquipmentActor->InitEquipmentActor(Info);
+}
+
+void ARLGameMode::SpawnEquipmentActorAroundPlayer(FGameplayTag EquipmentTag, float EquipmentLevel)
+{
+	FVector PlayerLocation = UGameplayStatics::GetPlayerPawn(this, 0)->GetActorLocation();
+	SpawnEquipmentActorAtLocation(EquipmentTag, FVector(PlayerLocation.X + FMath::RandRange(-90, 90), PlayerLocation.Y + FMath::RandRange(-90, 90), 0), EquipmentLevel);
+}
+
 ARLEnemy* ARLGameMode::SpawnEnemyAtLocation(ECharacterType EnemyType, FVector Location)
 {
 	FCharacterClassDefaultInfo Info = CharacterInfos->GetClassDefaultInfo(EnemyType);
 	ARLEnemy* Enemy = Cast<ARLEnemy>(GetWorld()->SpawnActor(Info.CharacterClass, &Location));
-
-	// TODO: 保存 Enemy 后续使用
-	
+	Enemies.Add(Enemy);
 	return Enemy;
+}
+
+void ARLGameMode::CheckEnemyAliveState()
+{
+	for(auto Enemy : Enemies)
+	{
+		if(!Enemy || !Enemy->GetCharacterAlive())
+			Enemies.Remove(Enemy);
+	}
+}
+
+TSet<ARLEnemy*> ARLGameMode::GetEnemiesInRange(const FVector TargetPosition, float Distance)
+{
+	CheckEnemyAliveState();
+	TSet<ARLEnemy*> RetEnemies;
+	for(auto Enemy : Enemies)
+	{
+		if(FVector::Distance(Enemy->GetActorLocation(), TargetPosition) <= Distance)
+			RetEnemies.Add(Enemy);
+	}
+	return RetEnemies;
+}
+
+void ARLGameMode::ReduceEnmeySpawnerNumber()
+{
+	EnemySpawnerNumber--;
+	CheckEnemyAliveState();
+	if(EnemySpawnerNumber == 0)
+		OnEnemyClear.Broadcast();
 }
 

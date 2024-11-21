@@ -11,7 +11,7 @@
 #include "RougelikeProject/UI/WidgetController/LevelMapWidgetController.h"
 #include "RLGameMode.generated.h"
 
-
+DECLARE_MULTICAST_DELEGATE(FEventDelegate)
 
 UCLASS()
 class ROUGELIKEPROJECT_API ARLGameMode : public AGameModeBase
@@ -27,16 +27,34 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	void EndLevel();
+	
+	FEventDelegate OnEnemyClear;
 
 	/* --- 技能 --- */
+	UFUNCTION(BlueprintCallable) // TEST
 	void SpawnAblityActorAroundPlayer(FGameplayTag AbilityTag, float AbilityLevel = 1);
 	
 	void SpawnAbilityActorAtLocation(FGameplayTag AbilityTag, FVector3d Location, float AbilityLevel);
 
 	float GetAbilityBaseDamageWithAbilityTag(FGameplayTag AbilityTag);
 
+	/* --- 装备 --- */
+	UFUNCTION(BlueprintCallable) // TEST
+	void SpawnEquipmentActorAroundPlayer(FGameplayTag EquipmentTag, float EquipmentLevel = 1);
+	
+	void SpawnEquipmentActorAtLocation(FGameplayTag EquipmentTag, FVector3d Location, float EquipmentLevel);
+	
+
 	/* --- 敌人生成 --- */
 	ARLEnemy* SpawnEnemyAtLocation(ECharacterType EnemyType, FVector Location);
+
+	void CheckEnemyAliveState();
+
+	TSet<ARLEnemy*> GetEnemiesInRange(const FVector TargetPosition, float Distance);
+	
+	void AddEnemySpawnerNumber() { EnemySpawnerNumber++; }; // 初始化时添加，敌人死光时减少。减为0时代表本关结束，可开启地图Actor。
+
+	void ReduceEnmeySpawnerNumber();
 	
 private:
 	UPROPERTY()
@@ -49,19 +67,34 @@ private:
 	
 	void LoadLevel(FName LevelName);
 	void UnLoadCurrentLevel();
-
+	
 	/* --- 技能 --- */
 	UPROPERTY(EditAnywhere)
 	UAbilityConfig* AbilityConfig;
 	
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<APropertyActor> AbilityActorClass;
-
+	
+	/* --- 装备 --- */
 	UPROPERTY(EditAnywhere)
-	TSubclassOf<ARLCharacter> PlayerCharacterClass;
-	bool bInit = false;
+	UEquipmentConfig* EquipmentConfig;
+	
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<APropertyActor> EquipmentActorClass;
 
 	/* --- 敌人生成 --- */
 	UPROPERTY(EditAnywhere)
 	UCharacterClassInfo* CharacterInfos;
+
+	int EnemySpawnerNumber = 0;
+
+	UPROPERTY()
+	TSet<ARLEnemy*> Enemies;
+
+
+	// 
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<ARLCharacter> PlayerCharacterClass;
+	
+	bool bInit = false;
 };

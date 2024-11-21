@@ -3,6 +3,8 @@
 
 #include "OverlayWidgetController.h"
 
+#include "RougelikeProject/AbilitySystem/RLAbilitySystemComponent.h"
+#include "RougelikeProject/AbilitySystem/RLAbilitySystemLibrary.h"
 #include "RougelikeProject/AbilitySystem/RLGameplayTags.h"
 #include "RougelikeProject/ArributeBaseSet/AttributeSetBase.h"
 #include "RougelikeProject/Player/RLPlayerState.h"
@@ -15,6 +17,7 @@ void UOverlayWidgetController::BroadcastInitialValues()
 	OnHealthChanged.Broadcast(WAttributeSet->GetHealth());
 	OnMaxHealthChanged.Broadcast(WAttributeSet->GetMaxHealth());
 	OnMoneyChanged.Broadcast(RLPS->GetMoney());
+	OnSkillCoinChanged.Broadcast(RLPS->GetSkillCoin());
 	OnPlayerLevelChanged.Broadcast(RLPS->GetPlayerLevel());
 	OnExpChanged.Broadcast(RLPS->GetExp(), RLPS->GetUpgradeNeedExp());
 }
@@ -45,6 +48,10 @@ void UOverlayWidgetController::BindCallbacksToDependencies()
 		{
 			OnMoneyChanged.Broadcast(NewMoney);
 		});
+	RLPS->OnSkillCoinChanged.AddLambda([this](int32 NewSkillCoin)
+		{
+			OnSkillCoinChanged.Broadcast(NewSkillCoin);
+		});
 	RLPS->OnPlayerLevelChanged.AddLambda([this](int32 NewLevel)
 		{
 			OnPlayerLevelChanged.Broadcast(NewLevel);
@@ -55,16 +62,23 @@ void UOverlayWidgetController::BindCallbacksToDependencies()
 		});
 }
 
-void UOverlayWidgetController::SetPropertyMessage(FText Message, UTexture2D* Image)
+void UOverlayWidgetController::SetPropertyMessage(FText PropertyName, EQuality PropertyQuality, FText PropertyDescription, int PropertyLevel, float PropertyBaseDamage, float PropertyCooldown)
 {
-	if(Message.IsEmpty())
-		return;
-	
-	FRLMessageInfo info;
-	info.Message = Message;
-	info.Image = Image;
+	OnPropertyMessage.Broadcast(PropertyName, PropertyQuality, PropertyDescription, PropertyLevel, PropertyBaseDamage, PropertyCooldown);
+}
 
-	OnPropertyMessage.Broadcast(info);
+void UOverlayWidgetController::SetAbilityMessage(FGameplayTag AbilityTag)
+{
+	FRLAbilityInfo AbilityInfo = AbilityConfig->FindAbilityInfo(AbilityTag);
+	AbilityInfo.AbilityLevel = Cast<URLAbilitySystemComponent>(AbilitySystemComponent)->GetAbilityLevel(AbilityTag);
+	SetPropertyMessage(AbilityInfo.AbilityName, AbilityInfo.AbilityQuality, AbilityInfo.AbilityDescription, AbilityInfo.AbilityLevel, AbilityInfo.AbilityBaseDamage, AbilityInfo.AbilityBaseCooldown);
+}
+
+void UOverlayWidgetController::SetEquipmentMessage(FGameplayTag EquipmentTag)
+{
+	FRLEquipmentInfo EquipmentInfo = EquipmentConfig->FindEquipmentInfo(EquipmentTag);
+	EquipmentInfo.EquipmentLevel = Cast<URLAbilitySystemComponent>(AbilitySystemComponent)->GetAbilityLevel(EquipmentTag);
+	SetPropertyMessage(EquipmentInfo.EquipmentName, EquipmentInfo.EquipmentQuality, EquipmentInfo.EquipmentDescription, EquipmentInfo.EquipmentLevel, 0, EquipmentInfo.EquipmentBaseCooldown);
 }
 
 void UOverlayWidgetController::SetTipMessageByTag(FGameplayTag MessageTag)
@@ -73,15 +87,15 @@ void UOverlayWidgetController::SetTipMessageByTag(FGameplayTag MessageTag)
 	OnTipMessage.Broadcast(info);
 }
 
-void UOverlayWidgetController::HideMessage(MessageHideMode mode)
+void UOverlayWidgetController::HideMessage(EMessageHideMode mode)
 {
-	if(mode == MessageHideMode::Tip)
+	if(mode == EMessageHideMode::Tip)
 		OnHideTipMessage.Broadcast();
 	
-	else if(mode == MessageHideMode::Property)
+	else if(mode == EMessageHideMode::Property)
 		OnHidePropertyMessage.Broadcast();
 	
-	else if(mode == MessageHideMode::All)
+	else if(mode == EMessageHideMode::All)
 	{
 		OnHideTipMessage.Broadcast();
 		OnHidePropertyMessage.Broadcast();
